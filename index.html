@@ -206,12 +206,12 @@
         <button class="danger" onclick="logout()">登出系統</button>
     </div>
 
-    <!-- 操作按鈕列 -->
+    <!-- 操作按鈕列 (加上 preventDefault 防止點擊時失焦) -->
     <div class="toolbar">
-        <button onclick="addRowBelowSelected()">+ 在下方新增橫列</button>
-        <button onclick="removeSelectedRow()">- 刪除此橫列</button>
-        <button onclick="addColumnRightSelected()">+ 在右側新增直欄</button>
-        <button onclick="removeSelectedColumn()">- 刪除此直欄</button>
+        <button onmousedown="event.preventDefault()" onclick="addRowBelowSelected()">+ 在下方新增橫列</button>
+        <button onmousedown="event.preventDefault()" onclick="removeSelectedRow()">- 刪除此橫列</button>
+        <button onmousedown="event.preventDefault()" onclick="addColumnRightSelected()">+ 在右側新增直欄</button>
+        <button onmousedown="event.preventDefault()" onclick="removeSelectedColumn()">- 刪除此直欄</button>
         <button class="danger" onclick="clearData()" style="margin-left: auto;">清空重設</button>
     </div>
 
@@ -296,17 +296,17 @@
         }
     }
 
-    // 綁定儲存格點選與聚焦事件
+    // 綁定儲存格點選事件
     function bindCellEvents() {
         table.querySelectorAll("th, td").forEach(cell => {
             cell.removeEventListener("focus", handleCellFocus);
-            cell.removeEventListener("click", handleCellFocus);
+            cell.removeEventListener("mousedown", handleCellFocus);
             cell.addEventListener("focus", handleCellFocus);
-            cell.addEventListener("click", handleCellFocus);
+            cell.addEventListener("mousedown", handleCellFocus);
         });
     }
 
-    // 處理點選高亮邏輯
+    // 處理點選高亮邏輯並保存紀錄
     function handleCellFocus(e) {
         if (selectedCell) {
             selectedCell.classList.remove("selected-cell");
@@ -315,7 +315,7 @@
         selectedCell.classList.add("selected-cell");
     }
 
-    // 取得當前選中的列與欄索引
+    // 取得當前選中的列與欄資訊
     function getSelectedPosition() {
         if (!selectedCell) return null;
 
@@ -323,14 +323,7 @@
         const colIndex = cell.cellIndex;
         const row = cell.parentElement;
 
-        let rowIndex;
-        if (row.parentElement.tagName === "THEAD") {
-            rowIndex = 0;
-        } else {
-            rowIndex = row.sectionRowIndex + 1;
-        }
-
-        return { row, cell, rowIndex, colIndex };
+        return { row, cell, colIndex };
     }
 
     // 1. 在下方新增橫列
