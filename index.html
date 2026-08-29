@@ -38,11 +38,18 @@
             padding: 24px;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: none; /* 預設隱藏，登入後顯示 */
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
+            margin: 0;
             font-weight: 600;
             color: #111827;
             letter-spacing: 0.5px;
@@ -122,10 +129,14 @@
 </head>
 <body>
 
-<div class="container">
-    <h2>樸素方格記錄表</h2>
+<div class="container" id="mainContainer">
+    <div class="header-row">
+        <h2>樸素方格記錄表</h2>
+        <!-- 登出按鈕區塊 -->
+        <button class="danger" onclick="logout()">登出系統</button>
+    </div>
 
-    <!-- 操作按鈕列 (已調整為以選取格為基準) -->
+    <!-- 操作按鈕列 (以選取格為基準) -->
     <div class="toolbar">
         <button onclick="addRowBelowSelected()">+ 在下方新增橫列</button>
         <button onclick="removeSelectedRow()">- 刪除此橫列</button>
@@ -164,17 +175,51 @@
     const table = document.getElementById("gridTable");
     const tableHeader = document.getElementById("tableHeader");
     const tableBody = document.getElementById("tableBody");
+    const mainContainer = document.getElementById("mainContainer");
 
+    const ADMIN_PASSWORD = "admin"; // 👈 可以在這裡修改你的管理員密碼
     let selectedCell = null; // 紀錄目前點選的儲存格
 
-    // 網頁開啟時載入快取資料
+    // 網頁開啟時檢查登入狀態
     document.addEventListener("DOMContentLoaded", () => {
+        checkAuth();
+    });
+
+    // 驗證登入密碼
+    function checkAuth() {
+        const isAuth = sessionStorage.getItem("isAdminAuth");
+        if (isAuth === "true") {
+            showApp();
+            return;
+        }
+
+        let password = prompt("請輸入 admin 密碼以存取方格記錄表：");
+        if (password === ADMIN_PASSWORD) {
+            sessionStorage.setItem("isAdminAuth", "true");
+            showApp();
+        } else {
+            alert("密碼錯誤，將重新整理頁面。");
+            location.reload();
+        }
+    }
+
+    // 顯示主程式介面並載入資料
+    function showApp() {
+        mainContainer.style.display = "block";
         loadTableData();
         bindCellEvents();
 
         // 監聽表格內容修改自動儲存
         table.addEventListener("input", saveTableData);
-    });
+    }
+
+    // 登出功能
+    function logout() {
+        if (confirm("確定要登出系統嗎？")) {
+            sessionStorage.removeItem("isAdminAuth");
+            location.reload();
+        }
+    }
 
     // 綁定儲存格點選與聚焦事件
     function bindCellEvents() {
@@ -227,10 +272,8 @@
         }
 
         if (pos && pos.row.parentElement.tagName === "TBODY") {
-            // 在選取的橫列下方插入
             pos.row.after(newRow);
         } else {
-            // 若未選取或點在表頭，預設加在最下方
             tableBody.appendChild(newRow);
         }
 
@@ -243,7 +286,6 @@
         const pos = getSelectedPosition();
 
         if (!pos) {
-            // 未選擇時刪除最後一列
             if (tableBody.rows.length > 1) {
                 tableBody.deleteRow(-1);
                 saveTableData();
@@ -274,14 +316,12 @@
         const pos = getSelectedPosition();
         const colIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
 
-        // 1. 新增表頭欄位
         const ths = Array.from(tableHeader.cells);
         const newTh = document.createElement("th");
         newTh.contentEditable = "true";
         newTh.textContent = `欄位 ${ths.length + 1}`;
         ths[colIndex].after(newTh);
 
-        // 2. 新增內容列對應欄位
         Array.from(tableBody.rows).forEach(row => {
             const tds = Array.from(row.cells);
             const newTd = document.createElement("td");
@@ -308,10 +348,8 @@
         const pos = getSelectedPosition();
         const targetColIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
 
-        // 刪除標題欄
         tableHeader.deleteCell(targetColIndex);
 
-        // 刪除各資料列的對應欄
         Array.from(tableBody.rows).forEach(row => {
             if (row.cells[targetColIndex]) {
                 row.deleteCell(targetColIndex);
@@ -341,7 +379,6 @@
 
         const { headers, rows } = JSON.parse(savedData);
 
-        // 渲染表頭
         tableHeader.innerHTML = "";
         headers.forEach(text => {
             const th = document.createElement("th");
@@ -350,7 +387,6 @@
             tableHeader.appendChild(th);
         });
 
-        // 渲染內容
         tableBody.innerHTML = "";
         rows.forEach(rowData => {
             const tr = document.createElement("tr");
