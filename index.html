@@ -245,7 +245,14 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+const logoutBtn = document.getElementById("logoutBtn");
 
+logoutBtn.addEventListener("click", () => {
+    if (confirm("確定要登出系統嗎？")) {
+        sessionStorage.removeItem("isAdminAuth");
+        location.reload();
+    }
+});
     // ⚠️ 請填入你的 Firebase 專案設定資訊
     const firebaseConfig = {
          apiKey: "AIzaSyAXXYDNoS6DN8oHg4rczYHQcyHJCiaAX8A",
@@ -324,14 +331,15 @@
         });
     }
 
-    // 登出功能
-    window.logout = function() {
-        if (confirm("確定要登出系統嗎？")) {
-            sessionStorage.removeItem("isAdminAuth");
-            location.reload();
-        }
+   // 登出功能 (掛載到全域 window 物件)
+window.logout = function() {
+    if (confirm("確定要登出系統嗎？")) {
+        // 清除登入狀態的 Session
+        sessionStorage.removeItem("isAdminAuth");
+        // 重新載入頁面，系統會自動跳回登入視窗
+        location.reload();
     }
-
+};
     // 綁定儲存格點選事件
     function bindCellEvents() {
         table.querySelectorAll("th, td").forEach(cell => {
