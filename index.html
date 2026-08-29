@@ -31,6 +31,65 @@
             align-items: center;
         }
 
+        /* 🔒 登入對話框樣式 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-card {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+        }
+
+        .login-card h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .login-card input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--grid-color);
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .login-card input[type="password"]:focus {
+            border-color: var(--selected-border);
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-btn);
+            font-size: 15px;
+        }
+
+        .error-msg {
+            color: var(--danger-btn);
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* 📊 主容器 */
         .container {
             width: 100%;
             max-width: 1000px;
@@ -129,14 +188,25 @@
 </head>
 <body>
 
+<!-- 🔒 登入視窗 -->
+<div class="login-overlay" id="loginModal">
+    <div class="login-card">
+        <h3>請輸入密碼登入</h3>
+        <input type="password" id="passwordInput" placeholder="請輸入密碼 (預設 admin)" onkeydown="if(event.key==='Enter') submitLogin()">
+        <button onclick="submitLogin()">登入</button>
+        <div class="error-msg" id="errorMsg">密碼錯誤，請重新輸入！</div>
+    </div>
+</div>
+
+<!-- 📊 主系統介面 -->
 <div class="container" id="mainContainer">
     <div class="header-row">
         <h2>樸素方格記錄表</h2>
-        <!-- 登出按鈕區塊 -->
+        <!-- 登出按鈕 -->
         <button class="danger" onclick="logout()">登出系統</button>
     </div>
 
-    <!-- 操作按鈕列 (以選取格為基準) -->
+    <!-- 操作按鈕列 -->
     <div class="toolbar">
         <button onclick="addRowBelowSelected()">+ 在下方新增橫列</button>
         <button onclick="removeSelectedRow()">- 刪除此橫列</button>
@@ -176,40 +246,45 @@
     const tableHeader = document.getElementById("tableHeader");
     const tableBody = document.getElementById("tableBody");
     const mainContainer = document.getElementById("mainContainer");
+    const loginModal = document.getElementById("loginModal");
+    const passwordInput = document.getElementById("passwordInput");
+    const errorMsg = document.getElementById("errorMsg");
 
-    const ADMIN_PASSWORD = "admin"; // 👈 可以在這裡修改你的管理員密碼
-    let selectedCell = null; // 紀錄目前點選的儲存格
+    const ADMIN_PASSWORD = "admin"; // 👈 可以在這裡修改管理員密碼
+    let selectedCell = null;
 
     // 網頁開啟時檢查登入狀態
     document.addEventListener("DOMContentLoaded", () => {
-        checkAuth();
-    });
-
-    // 驗證登入密碼
-    function checkAuth() {
         const isAuth = sessionStorage.getItem("isAdminAuth");
         if (isAuth === "true") {
             showApp();
-            return;
+        } else {
+            loginModal.style.display = "flex";
+            passwordInput.focus();
         }
+    });
 
-        let password = prompt("請輸入 admin 密碼以存取方格記錄表：");
-        if (password === ADMIN_PASSWORD) {
+    // 提交密碼驗證
+    function submitLogin() {
+        const inputVal = passwordInput.value;
+        if (inputVal === ADMIN_PASSWORD) {
             sessionStorage.setItem("isAdminAuth", "true");
+            errorMsg.style.display = "none";
             showApp();
         } else {
-            alert("密碼錯誤，將重新整理頁面。");
-            location.reload();
+            errorMsg.style.display = "block";
+            passwordInput.value = "";
+            passwordInput.focus();
         }
     }
 
-    // 顯示主程式介面並載入資料
+    // 顯示主程式介面
     function showApp() {
+        loginModal.style.display = "none";
         mainContainer.style.display = "block";
         loadTableData();
         bindCellEvents();
 
-        // 監聽表格內容修改自動儲存
         table.addEventListener("input", saveTableData);
     }
 
@@ -240,7 +315,7 @@
         selectedCell.classList.add("selected-cell");
     }
 
-    // 取得當前選中的列與欄索引 (RowIndex, ColIndex)
+    // 取得當前選中的列與欄索引
     function getSelectedPosition() {
         if (!selectedCell) return null;
 
@@ -250,15 +325,15 @@
 
         let rowIndex;
         if (row.parentElement.tagName === "THEAD") {
-            rowIndex = 0; // 表頭列
+            rowIndex = 0;
         } else {
-            rowIndex = row.sectionRowIndex + 1; // 內容列 (+1 避開表頭)
+            rowIndex = row.sectionRowIndex + 1;
         }
 
         return { row, cell, rowIndex, colIndex };
     }
 
-    // 1. 在下方新增橫列 (Row)
+    // 1. 在下方新增橫列
     function addRowBelowSelected() {
         const pos = getSelectedPosition();
         const colCount = tableHeader.cells.length;
@@ -281,7 +356,7 @@
         saveTableData();
     }
 
-    // 2. 刪除選中的橫列 (Row)
+    // 2. 刪除選中的橫列
     function removeSelectedRow() {
         const pos = getSelectedPosition();
 
@@ -311,7 +386,7 @@
         saveTableData();
     }
 
-    // 3. 在右側新增直欄 (Column)
+    // 3. 在右側新增直欄
     function addColumnRightSelected() {
         const pos = getSelectedPosition();
         const colIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
@@ -338,7 +413,7 @@
         saveTableData();
     }
 
-    // 4. 刪除選中的直欄 (Column)
+    // 4. 刪除選中的直欄
     function removeSelectedColumn() {
         if (tableHeader.cells.length <= 1) {
             alert("至少需保留一欄！");
