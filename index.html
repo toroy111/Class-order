@@ -241,11 +241,11 @@
     </div>
 </div>
 
-<!-- 引入 Firebase SDK (Modular 寫法) -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<!-- 引入 Firebase SDK (Compat 傳統相容版本，確保全域函式 100% 正常綁定) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+<script>
     // Firebase 專案設定
     const firebaseConfig = {
         apiKey: "AIzaSyAgeP2a6Z-TqJaZ5F0j_2UoXVQ_WE3sckw",
@@ -259,9 +259,9 @@
     };
 
     // 初始化 Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const dbRef = ref(db, 'tableData');
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const dbRef = db.ref('tableData');
 
     const table = document.getElementById("gridTable");
     const tableHeader = document.getElementById("tableHeader");
@@ -271,11 +271,11 @@
     const passwordInput = document.getElementById("passwordInput");
     const errorMsg = document.getElementById("errorMsg");
 
-    const ADMIN_PASSWORD = "admin"; // 👈 預設登入密碼
+    const ADMIN_PASSWORD = "admin"; // 👈 登入密碼 (可自訂)
     let selectedCell = null;
     let isUpdatingFromCloud = false;
 
-    // 預設的初始表格資料 (解決 Firebase 為空時無法顯示的問題)
+    // 預設初始表格資料
     const defaultData = {
         headers: ["欄位 1", "欄位 2", "欄位 3"],
         rows: [
@@ -285,7 +285,7 @@
     };
 
     // 網頁開啟時檢查登入狀態
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", function() {
         const isAuth = sessionStorage.getItem("isAdminAuth");
         if (isAuth === "true") {
             showApp();
@@ -295,8 +295,8 @@
         }
     });
 
-    // 修正：明確將 submitLogin 掛載到全域 window 上，解決按鈕無法點擊問題
-    window.submitLogin = function() {
+    // 🔑 登入驗證
+    function submitLogin() {
         const inputVal = passwordInput.value;
         if (inputVal === ADMIN_PASSWORD) {
             sessionStorage.setItem("isAdminAuth", "true");
@@ -307,15 +307,15 @@
             passwordInput.value = "";
             passwordInput.focus();
         }
-    };
+    }
 
-    // 修正：明確將 logout 掛載到全域 window 上
-    window.logout = function() {
+    // 🚪 登出功能
+    function logout() {
         if (confirm("確定要登出系統嗎？")) {
             sessionStorage.removeItem("isAdminAuth");
             location.reload();
         }
-    };
+    }
 
     // 顯示主介面並監聽 Firebase 資料
     function showApp() {
@@ -323,7 +323,7 @@
         mainContainer.style.display = "block";
 
         // 監聽 Firebase 雲端資料變動 (即時同步)
-        onValue(dbRef, (snapshot) => {
+        dbRef.on('value', function(snapshot) {
             const data = snapshot.val();
             if (data) {
                 isUpdatingFromCloud = true;
@@ -331,13 +331,13 @@
                 bindCellEvents();
                 isUpdatingFromCloud = false;
             } else {
-                // 修正：如果 Firebase 目前完全沒有資料，自動寫入預設資料進行初始化
-                set(dbRef, defaultData);
+                // 如果 Firebase 資料庫為空，自動補入初始資料
+                dbRef.set(defaultData);
             }
         });
 
         // 監聽本地輸入事件，自動上傳至 Firebase
-        table.addEventListener("input", () => {
+        table.addEventListener("input", function() {
             if (!isUpdatingFromCloud) {
                 saveTableDataToCloud();
             }
@@ -346,7 +346,7 @@
 
     // 綁定儲存格點選事件
     function bindCellEvents() {
-        table.querySelectorAll("th, td").forEach(cell => {
+        table.querySelectorAll("th, td").forEach(function(cell) {
             cell.removeEventListener("focus", handleCellFocus);
             cell.removeEventListener("mousedown", handleCellFocus);
             cell.addEventListener("focus", handleCellFocus);
@@ -370,8 +370,8 @@
         return { row, cell, colIndex };
     }
 
-    // 修正：全部操作函式皆綁定至全域 window，確保 HTML 按鈕觸發正常
-    window.addRowBelowSelected = function() {
+    // ➕ 下方新增橫列
+    function addRowBelowSelected() {
         const pos = getSelectedPosition();
         const colCount = tableHeader.cells.length;
         const newRow = document.createElement("tr");
@@ -391,9 +391,10 @@
 
         bindCellEvents();
         saveTableDataToCloud();
-    };
+    }
 
-    window.removeSelectedRow = function() {
+    // ➖ 刪除橫列
+    function removeSelectedRow() {
         const pos = getSelectedPosition();
 
         if (!pos) {
@@ -420,19 +421,20 @@
         selectedCell = null;
         bindCellEvents();
         saveTableDataToCloud();
-    };
+    }
 
-    window.addColumnRightSelected = function() {
+    // ➕ 右側新增直欄
+    function addColumnRightSelected() {
         const pos = getSelectedPosition();
         const colIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
 
         const ths = Array.from(tableHeader.cells);
         const newTh = document.createElement("th");
         newTh.contentEditable = "true";
-        newTh.textContent = `欄位 ${ths.length + 1}`;
+        newTh.textContent = "欄位 " + (ths.length + 1);
         ths[colIndex].after(newTh);
 
-        Array.from(tableBody.rows).forEach(row => {
+        Array.from(tableBody.rows).forEach(function(row) {
             const tds = Array.from(row.cells);
             const newTd = document.createElement("td");
             newTd.contentEditable = "true";
@@ -446,9 +448,10 @@
 
         bindCellEvents();
         saveTableDataToCloud();
-    };
+    }
 
-    window.removeSelectedColumn = function() {
+    // ➖ 刪除直欄
+    function removeSelectedColumn() {
         if (tableHeader.cells.length <= 1) {
             alert("至少需保留一欄！");
             return;
@@ -459,7 +462,7 @@
 
         tableHeader.deleteCell(targetColIndex);
 
-        Array.from(tableBody.rows).forEach(row => {
+        Array.from(tableBody.rows).forEach(function(row) {
             if (row.cells[targetColIndex]) {
                 row.deleteCell(targetColIndex);
             }
@@ -468,25 +471,28 @@
         selectedCell = null;
         bindCellEvents();
         saveTableDataToCloud();
-    };
-
-    function saveTableDataToCloud() {
-        const headers = Array.from(tableHeader.cells).map(cell => cell.textContent);
-        const rows = Array.from(tableBody.rows).map(row => 
-            Array.from(row.cells).map(cell => cell.textContent)
-        );
-
-        const tableData = { headers, rows };
-        set(dbRef, tableData);
     }
 
+    // 💾 儲存至雲端
+    function saveTableDataToCloud() {
+        const headers = Array.from(tableHeader.cells).map(function(cell) { return cell.textContent; });
+        const rows = Array.from(tableBody.rows).map(function(row) { 
+            return Array.from(row.cells).map(function(cell) { return cell.textContent; });
+        });
+
+        const tableData = { headers: headers, rows: rows };
+        dbRef.set(tableData);
+    }
+
+    // 🖥 渲染雲端資料到表格
     function renderTableData(data) {
         if (!data || !data.headers || !data.rows) return;
 
-        const { headers, rows } = data;
+        const headers = data.headers;
+        const rows = data.rows;
 
         tableHeader.innerHTML = "";
-        headers.forEach(text => {
+        headers.forEach(function(text) {
             const th = document.createElement("th");
             th.contentEditable = "true";
             th.textContent = text;
@@ -494,9 +500,9 @@
         });
 
         tableBody.innerHTML = "";
-        rows.forEach(rowData => {
+        rows.forEach(function(rowData) {
             const tr = document.createElement("tr");
-            rowData.forEach(text => {
+            rowData.forEach(function(text) {
                 const td = document.createElement("td");
                 td.contentEditable = "true";
                 td.textContent = text;
@@ -506,11 +512,12 @@
         });
     }
 
-    window.clearData = function() {
+    // 🧹 清空重設
+    function clearData() {
         if (confirm("確定要清空並重設雲端表格嗎？")) {
-            set(dbRef, defaultData);
+            dbRef.set(defaultData);
         }
-    };
+    }
 </script>
 
 </body>
