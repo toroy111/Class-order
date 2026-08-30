@@ -32,7 +32,7 @@
             min-height: 100vh;
         }
 
-        /* 🔒 登入對話框樣式 (響應式) */
+        /* 🔒 登入對話框樣式 */
         .login-overlay {
             position: fixed;
             top: 0;
@@ -94,7 +94,7 @@
             display: none;
         }
 
-        /* 📊 主容器 (自動適應電腦與手機寬度) */
+        /* 📊 主容器 */
         .container {
             width: 100%;
             max-width: 1100px;
@@ -102,7 +102,7 @@
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            display: none; /* 預設隱藏，登入後顯示 */
+            display: none;
         }
 
         .header-row {
@@ -121,7 +121,7 @@
             font-size: 20px;
         }
 
-        /* 🔘 工具列按鈕樣式 (手機版自動換行優化) */
+        /* 🔘 工具列按鈕樣式 */
         .toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -157,11 +157,11 @@
             background-color: var(--danger-btn);
         }
 
-        /* 🏁 樸素方格表格樣式 (適應手機滑動) */
+        /* 🏁 樸素方格表格樣式 */
         .table-container {
             width: 100%;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* iOS 滑動順暢 */
+            -webkit-overflow-scrolling: touch;
             border: 1px solid var(--grid-color);
             border-radius: 6px;
         }
@@ -171,7 +171,7 @@
             border-collapse: collapse;
             background-color: #ffffff;
             text-align: left;
-            min-width: 500px; /* 確保手機上有合理的最小寬度 */
+            min-width: 500px;
         }
 
         th, td {
@@ -181,6 +181,8 @@
             font-size: 14px;
             position: relative;
             word-break: break-word;
+            /* 👈 關鍵設定：保留換行格式並自動折行 */
+            white-space: pre-wrap; 
         }
 
         th {
@@ -205,7 +207,7 @@
             background-color: var(--hover-bg);
         }
 
-        /* 📱 手機版專屬微調 (螢幕寬度 < 600px 時套用) */
+        /* 📱 手機版專屬微調 */
         @media (max-width: 600px) {
             body {
                 padding: 10px 8px;
@@ -230,13 +232,13 @@
             }
 
             .toolbar button {
-                flex: 1 1 calc(50% - 6px); /* 手機上按鈕兩兩一排 */
+                flex: 1 1 calc(50% - 6px);
                 padding: 8px 6px;
                 font-size: 12px;
             }
 
             .toolbar button.danger {
-                flex: 1 1 100%; /* 清空按鈕單獨佔據整列 */
+                flex: 1 1 100%;
                 margin-left: 0 !important;
                 margin-top: 4px;
             }
@@ -459,7 +461,7 @@
         for (let i = 0; i < colCount; i++) {
             const newCell = document.createElement("td");
             newCell.contentEditable = "true";
-            newCell.textContent = "";
+            newCell.innerHTML = "";
             newRow.appendChild(newCell);
         }
 
@@ -511,14 +513,14 @@
         const ths = Array.from(tableHeader.cells);
         const newTh = document.createElement("th");
         newTh.contentEditable = "true";
-        newTh.textContent = "欄位 " + (ths.length + 1);
+        newTh.innerHTML = "欄位 " + (ths.length + 1);
         ths[colIndex].after(newTh);
 
         Array.from(tableBody.rows).forEach(function(row) {
             const tds = Array.from(row.cells);
             const newTd = document.createElement("td");
             newTd.contentEditable = "true";
-            newTd.textContent = "";
+            newTd.innerHTML = "";
             if (tds[colIndex]) {
                 tds[colIndex].after(newTd);
             } else {
@@ -553,18 +555,18 @@
         saveTableDataToCloud();
     }
 
-    // 💾 儲存至雲端
+    // 💾 儲存至雲端 (改用 innerHTML 儲存完整的換行格式)
     function saveTableDataToCloud() {
-        const headers = Array.from(tableHeader.cells).map(function(cell) { return cell.textContent; });
+        const headers = Array.from(tableHeader.cells).map(function(cell) { return cell.innerHTML; });
         const rows = Array.from(tableBody.rows).map(function(row) { 
-            return Array.from(row.cells).map(function(cell) { return cell.textContent; });
+            return Array.from(row.cells).map(function(cell) { return cell.innerHTML; });
         });
 
         const tableData = { headers: headers, rows: rows };
         dbRef.set(tableData);
     }
 
-    // 🖥 渲染雲端資料到表格
+    // 🖥 渲染雲端資料到表格 (改用 innerHTML 完整還原)
     function renderTableData(data) {
         if (!data || !data.headers || !data.rows) return;
 
@@ -575,7 +577,7 @@
         headers.forEach(function(text) {
             const th = document.createElement("th");
             th.contentEditable = "true";
-            th.textContent = text;
+            th.innerHTML = text;
             tableHeader.appendChild(th);
         });
 
@@ -585,7 +587,7 @@
             rowData.forEach(function(text) {
                 const td = document.createElement("td");
                 td.contentEditable = "true";
-                td.textContent = text;
+                td.innerHTML = text;
                 tr.appendChild(td);
             });
             tableBody.appendChild(tr);
