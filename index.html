@@ -191,6 +191,13 @@
             background-color: #e5e7eb;
         }
 
+        /* 📋 複製格式（格式刷）啟用狀態樣式 */
+        .editor-btn.active {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border-color: #1d4ed8 !important;
+        }
+
         .editor-select {
             height: 32px;
             padding: 4px 8px;
@@ -380,7 +387,7 @@
 
     <!-- 📝 Word 風格文字編輯排版工具列 -->
     <div class="text-editor-toolbar">
-        <!-- 🔤 修正後的字型大小選單 -->
+        <!-- 🔤 字型大小選單 -->
         <select class="editor-select" id="fontSizeSelect" onfocus="saveSelection()" onchange="setFontSize(this.value); this.selectedIndex=0;">
             <option value="" disabled selected>字型大小</option>
             <option value="12px">12 px</option>
@@ -472,6 +479,9 @@
         <div class="divider"></div>
 
         <button class="editor-btn" title="清除文字格式" onmousedown="event.preventDefault()" onclick="formatText('removeFormat')">🧹 清除格式</button>
+        
+        <!-- ✨ 新增的「複製格式」按鈕 -->
+        <button class="editor-btn" id="formatPainterBtn" title="複製格式" onmousedown="event.preventDefault()" onclick="copyFormat()">📋 複製格式</button>
     </div>
 
     <!-- 表格區域 -->
@@ -533,6 +543,10 @@
     let isComposing = false;
     let savedRange = null;
 
+    // 📋 複製格式變數
+    let copiedStyle = null;
+    let isFormatPainterActive = false;
+
     const defaultData = {
         headers: ["欄位 1", "欄位 2", "欄位 3"],
         rows: [
@@ -557,6 +571,10 @@
                 closeDropdowns();
             }
         });
+
+        // 監聽選取事件以套用複製的格式
+        document.addEventListener('mouseup', applyCopiedFormat);
+        document.addEventListener('keyup', applyCopiedFormat);
     });
 
     function toggleDropdown(menuId) {
@@ -617,13 +635,11 @@
         saveTableDataToCloud();
     }
 
-    /* 🔤 強化版字型大小套用機制 */
     function setFontSize(pxSize) {
         restoreSelection();
         if (!savedRange) return;
 
-        // 套用標籤並取代 style 的 px 值
-        document.execCommand('fontSize', false, '7'); // 暫時標記 font size 7
+        document.execCommand('fontSize', false, '7');
         
         const fontElements = table.querySelectorAll('font[size="7"]');
         fontElements.forEach(el => {
@@ -633,6 +649,68 @@
             el.parentNode.replaceChild(span, el);
         });
 
+        saveTableDataToCloud();
+    }
+
+    /* 📋 複製格式機制 (格式刷) */
+    function copyFormat() {
+        restoreSelection();
+        const sel = window.getSelection();
+        
+        if (!sel.rangeCount || sel.isCollapsed && !selectedCell) {
+            alert("請先將游標點擊在欲複製格式的文字上！");
+            return;
+        }
+
+        let targetNode = sel.anchorNode;
+        if (targetNode.nodeType === 3) {
+            targetNode = targetNode.parentNode;
+        }
+
+        const computedStyle = window.getComputedStyle(targetNode);
+        
+        copiedStyle = {
+            fontSize: computedStyle.fontSize,
+            color: computedStyle.color,
+            backgroundColor: computedStyle.backgroundColor,
+            fontWeight: computedStyle.fontWeight,
+            fontStyle: computedStyle.fontStyle,
+            textDecorationLine: computedStyle.textDecorationLine
+        };
+
+        isFormatPainterActive = true;
+        const btn = document.getElementById('formatPainterBtn');
+        btn.classList.add('active');
+    }
+
+    function applyCopiedFormat() {
+        if (!isFormatPainterActive || !copiedStyle) return;
+
+        const sel = window.getSelection();
+        if (!sel.rangeCount || sel.isCollapsed) return;
+
+        restoreSelection();
+        document.execCommand('styleWithCSS', false, true);
+
+        // 套用各種樣式
+        document.execCommand('foreColor', false, copiedStyle.color);
+        document.execCommand('hiliteColor', false, copiedStyle.backgroundColor);
+        
+        if ((copiedStyle.fontWeight === 'bold' || parseInt(copiedStyle.fontWeight) >= 700) !== document.queryCommandState('bold')) {
+            document.execCommand('bold', false, null);
+        }
+        if ((copiedStyle.fontStyle === 'italic') !== document.queryCommandState('italic')) {
+            document.execCommand('italic', false, null);
+        }
+
+        if (copiedStyle.fontSize) {
+            setFontSize(copiedStyle.fontSize);
+        }
+
+        // 完成後解除格式刷狀態
+        isFormatPainterActive = false;
+        copiedStyle = null;
+        document.getElementById('formatPainterBtn').classList.remove('active');
         saveTableDataToCloud();
     }
 
