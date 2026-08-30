@@ -121,19 +121,19 @@
             font-size: 20px;
         }
 
-        /* 🔘 工具列按鈕樣式 */
+        /* 🔘 表格結構按鈕列 */
         .toolbar {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         button {
             background-color: var(--primary-btn);
             color: #ffffff;
             border: none;
-            padding: 9px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
@@ -155,6 +155,72 @@
 
         button.danger {
             background-color: var(--danger-btn);
+        }
+
+        /* 📝 Word 風格文字編輯工具列 */
+        .text-editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background-color: #f3f4f6;
+            border: 1px solid var(--grid-color);
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+
+        .editor-btn {
+            background-color: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            font-size: 13px;
+            border-radius: 4px;
+            min-width: 32px;
+            height: 32px;
+        }
+
+        .editor-btn:hover {
+            background-color: #e5e7eb;
+        }
+
+        .editor-select, .editor-color {
+            height: 32px;
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background-color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .editor-color-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            background: #fff;
+            padding: 2px 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+
+        .editor-color-wrapper input[type="color"] {
+            border: none;
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .divider {
+            width: 1px;
+            height: 20px;
+            background-color: #d1d5db;
+            margin: 0 4px;
         }
 
         /* 🏁 樸素方格表格樣式 */
@@ -181,8 +247,7 @@
             font-size: 14px;
             position: relative;
             word-break: break-word;
-            /* 👈 關鍵設定：保留換行格式並自動折行 */
-            white-space: pre-wrap; 
+            white-space: pre-wrap; /* 保留換行 */
         }
 
         th {
@@ -222,15 +287,6 @@
                 font-size: 16px;
             }
 
-            .header-row button {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-
-            .toolbar {
-                gap: 6px;
-            }
-
             .toolbar button {
                 flex: 1 1 calc(50% - 6px);
                 padding: 8px 6px;
@@ -241,6 +297,16 @@
                 flex: 1 1 100%;
                 margin-left: 0 !important;
                 margin-top: 4px;
+            }
+
+            .text-editor-toolbar {
+                gap: 4px;
+                padding: 6px;
+            }
+
+            .editor-btn {
+                padding: 4px 8px;
+                font-size: 12px;
             }
 
             th, td {
@@ -267,17 +333,64 @@
 <div class="container" id="mainContainer">
     <div class="header-row">
         <h2>JAF 記錄表 (雲端同步版)</h2>
-        <!-- 登出按鈕 -->
         <button class="danger" onclick="logout()">登出</button>
     </div>
 
-    <!-- 操作按鈕列 -->
+    <!-- 表格結構操作按鈕 -->
     <div class="toolbar">
         <button onmousedown="event.preventDefault()" onclick="addRowBelowSelected()">+ 下方新增列</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedRow()">- 刪除此橫列</button>
         <button onmousedown="event.preventDefault()" onclick="addColumnRightSelected()">+ 右側新增欄</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedColumn()">- 刪除此直欄</button>
         <button class="danger" onclick="clearData()" style="margin-left: auto;">清空重設</button>
+    </div>
+
+    <!-- 📝 Word 風格文字編輯排版工具列 -->
+    <div class="text-editor-toolbar">
+        <!-- 字體大小 -->
+        <select class="editor-select" onchange="formatText('fontSize', this.value); this.selectedIndex=0;" onmousedown="event.preventDefault()">
+            <option value="" disabled selected>字型大小</option>
+            <option value="1">極小 (10px)</option>
+            <option value="2">小 (13px)</option>
+            <option value="3">標準 (16px)</option>
+            <option value="4">中 (18px)</option>
+            <option value="5">大 (24px)</option>
+            <option value="6">極大 (32px)</option>
+        </select>
+
+        <div class="divider"></div>
+
+        <!-- 粗體、斜體、底線、刪除線 -->
+        <button class="editor-btn" title="粗體" onmousedown="event.preventDefault()" onclick="formatText('bold')"><b>B</b></button>
+        <button class="editor-btn" title="斜體" onmousedown="event.preventDefault()" onclick="formatText('italic')"><i>I</i></button>
+        <button class="editor-btn" title="底線" onmousedown="event.preventDefault()" onclick="formatText('underline')"><u>U</u></button>
+        <button class="editor-btn" title="刪除線" onmousedown="event.preventDefault()" onclick="formatText('strikeThrough')"><s>S</s></button>
+
+        <div class="divider"></div>
+
+        <!-- 文字顏色 -->
+        <div class="editor-color-wrapper" title="文字顏色">
+            <span><b>A</b></span>
+            <input type="color" onchange="formatText('foreColor', this.value)">
+        </div>
+
+        <!-- 螢光筆背景色 -->
+        <div class="editor-color-wrapper" title="文字背景螢光色">
+            <span>🖌️</span>
+            <input type="color" value="#ffff00" onchange="formatText('hiliteColor', this.value)">
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 對齊方式 -->
+        <button class="editor-btn" title="靠左對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyLeft')">⬅️</button>
+        <button class="editor-btn" title="置中對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyCenter')">↔️</button>
+        <button class="editor-btn" title="靠右對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyRight')">➡️</button>
+
+        <div class="divider"></div>
+
+        <!-- 清除格式 -->
+        <button class="editor-btn" title="清除文字格式" onmousedown="event.preventDefault()" onclick="formatText('removeFormat')">🧹 清除格式</button>
     </div>
 
     <!-- 表格區域 -->
@@ -383,6 +496,12 @@
         }
     }
 
+    // 📝 執行 Word 富文本編輯命令
+    function formatText(command, value = null) {
+        document.execCommand(command, false, value);
+        saveTableDataToCloud(); // 編輯排版後自動儲存至雲端
+    }
+
     // 顯示主介面並監聽 Firebase 資料
     function showApp() {
         loginModal.style.display = "none";
@@ -392,7 +511,7 @@
         dbRef.on('value', function(snapshot) {
             const data = snapshot.val();
             if (data) {
-                // 如果使用者正在編輯輸入中，先不強制刷掉畫面，避免打字被切斷
+                // 如果使用者正在編輯輸入中，先不強制刷掉畫面
                 if (document.activeElement && document.activeElement.isContentEditable) {
                     return;
                 }
@@ -415,7 +534,7 @@
             saveTableDataToCloud();
         });
 
-        // 監聽本地輸入事件，只有在「非注音拼字狀態」下才同步
+        // 監聽本地輸入事件
         table.addEventListener("input", function() {
             if (!isUpdatingFromCloud && !isComposing) {
                 saveTableDataToCloud();
@@ -555,7 +674,7 @@
         saveTableDataToCloud();
     }
 
-    // 💾 儲存至雲端 (改用 innerHTML 儲存完整的換行格式)
+    // 💾 儲存至雲端
     function saveTableDataToCloud() {
         const headers = Array.from(tableHeader.cells).map(function(cell) { return cell.innerHTML; });
         const rows = Array.from(tableBody.rows).map(function(row) { 
@@ -566,7 +685,7 @@
         dbRef.set(tableData);
     }
 
-    // 🖥 渲染雲端資料到表格 (改用 innerHTML 完整還原)
+    // 🖥 渲染雲端資料到表格
     function renderTableData(data) {
         if (!data || !data.headers || !data.rows) return;
 
