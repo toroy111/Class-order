@@ -321,7 +321,6 @@
 
     <!-- 📝 Word 風格文字編輯排版工具列 -->
     <div class="text-editor-toolbar">
-        <!-- 字型大小 -->
         <select class="editor-select" id="fontSizeSelect" onchange="setFontSize(this.value); this.selectedIndex=0;" onmousedown="event.preventDefault()">
             <option value="" disabled selected>字型大小</option>
             <option value="12px">12 px</option>
@@ -335,7 +334,6 @@
 
         <div class="divider"></div>
 
-        <!-- 粗體、斜體、底線、刪除線 -->
         <button class="editor-btn" title="粗體" onmousedown="event.preventDefault()" onclick="formatText('bold')"><b>B</b></button>
         <button class="editor-btn" title="斜體" onmousedown="event.preventDefault()" onclick="formatText('italic')"><i>I</i></button>
         <button class="editor-btn" title="底線" onmousedown="event.preventDefault()" onclick="formatText('underline')"><u>U</u></button>
@@ -343,13 +341,11 @@
 
         <div class="divider"></div>
 
-        <!-- 文字顏色 -->
         <div class="editor-color-wrapper" title="文字顏色">
             <span><b>A</b></span>
             <input type="color" onmousedown="saveSelection()" onchange="formatText('foreColor', this.value)">
         </div>
 
-        <!-- 螢光筆背景色 -->
         <div class="editor-color-wrapper" title="文字背景螢光色">
             <span>🖌️</span>
             <input type="color" value="#ffff00" onmousedown="saveSelection()" onchange="formatText('hiliteColor', this.value)">
@@ -357,14 +353,12 @@
 
         <div class="divider"></div>
 
-        <!-- 對齊方式 -->
         <button class="editor-btn" title="靠左對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyLeft')">⬅️</button>
         <button class="editor-btn" title="置中對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyCenter')">↔️</button>
         <button class="editor-btn" title="靠右對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyRight')">➡️</button>
 
         <div class="divider"></div>
 
-        <!-- 清除格式 -->
         <button class="editor-btn" title="清除文字格式" onmousedown="event.preventDefault()" onclick="formatText('removeFormat')">🧹 清除格式</button>
     </div>
 
@@ -411,7 +405,6 @@
         measurementId: "G-LQYZZV98HC"
     };
 
-    // 初始化 Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const dbRef = db.ref('tableData');
@@ -428,7 +421,7 @@
     let selectedCell = null;
     let isUpdatingFromCloud = false;
     let isComposing = false;
-    let savedRange = null; // 紀錄使用者選取的文字範圍
+    let savedRange = null;
 
     const defaultData = {
         headers: ["欄位 1", "欄位 2", "欄位 3"],
@@ -447,23 +440,19 @@
             passwordInput.focus();
         }
 
-        // 當在頁面上記錄選取範圍時保存 state
         document.addEventListener('selectionchange', saveSelection);
     });
 
-    // 💾 記錄目前游標/反白文字的選取範圍
     function saveSelection() {
         const sel = window.getSelection();
         if (sel.rangeCount > 0) {
             const range = sel.getRangeAt(0);
-            // 確保選取的範疇是在表格內
             if (table.contains(range.commonAncestorContainer)) {
                 savedRange = range.cloneRange();
             }
         }
     }
 
-    // 🔄 還原文字選取範圍
     function restoreSelection() {
         if (savedRange) {
             const sel = window.getSelection();
@@ -492,15 +481,13 @@
         }
     }
 
-    // 📝 格式變更處理
     function formatText(command, value = null) {
-        restoreSelection(); // 先還原剛才反白的文字
-        document.execCommand('styleWithCSS', false, true); // 使用 CSS 樣式模式
+        restoreSelection();
+        document.execCommand('styleWithCSS', false, true);
         document.execCommand(command, false, value);
         saveTableDataToCloud();
     }
 
-    // 📏 精準修改字型大小 (使用 Inline CSS)
     function setFontSize(pxSize) {
         restoreSelection();
         const sel = window.getSelection();
@@ -516,20 +503,72 @@
         }
     }
 
-    /* 📄 導出成 Word 檔案 (.doc) */
+    /* 📄 精準美化 Word 導出模組 */
     function exportToWord() {
         const tableClone = table.cloneNode(true);
-        tableClone.querySelectorAll('.selected-cell').forEach(el => el.classList.remove('selected-cell'));
+
+        // 移除選取框與 contenteditable 屬性
+        tableClone.querySelectorAll('th, td').forEach(cell => {
+            cell.classList.remove('selected-cell');
+            cell.removeAttribute('contenteditable');
+            
+            // 轉換內嵌樣式以精準相容 Word
+            cell.style.border = '1.0pt solid #d1d5db';
+            cell.style.padding = '8px 12px';
+            cell.style.fontSize = '14px';
+            cell.style.wordBreak = 'break-word';
+            cell.style.whiteSpace = 'pre-wrap';
+        });
+
+        tableClone.querySelectorAll('th').forEach(th => {
+            th.style.backgroundColor = '#f3f4f6';
+            th.style.fontWeight = 'bold';
+        });
 
         const wordHTML = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                  xmlns:w='urn:schemas-microsoft-com:office:word' 
+                  xmlns='http://www.w3.org/TR/REC-html40'>
             <head>
                 <meta charset='utf-8'>
                 <title>JAF 記錄表</title>
+                <!--[if gte mso 9]>
+                <xml>
+                    <w:WordDocument>
+                        <w:View>Print</w:View>
+                        <w:Zoom>100</w:Zoom>
+                        <w:DoNotOptimizeForBrowser/>
+                    </w:WordDocument>
+                </xml>
+                <![endif]-->
                 <style>
-                    table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
-                    th, td { border: 1px solid #000000; padding: 8px 12px; font-size: 14px; vertical-align: top; }
-                    th { background-color: #f3f4f6; font-weight: bold; }
+                    @page {
+                        size: A4 portrait;
+                        margin: 2cm;
+                    }
+                    body {
+                        font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+                        color: #374151;
+                    }
+                    h2 {
+                        font-size: 18pt;
+                        margin-bottom: 12pt;
+                        color: #111827;
+                    }
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin-top: 10px;
+                        mso-yfti-tbllook: 1188;
+                        mso-padding-alt: 0cm 5.4pt 0cm 5.4pt;
+                    }
+                    tr {
+                        mso-yfti-irow: 0;
+                        mso-yfti-firstrow: yes;
+                    }
+                    th, td {
+                        mso-border-alt: solid #d1d5db .5pt;
+                    }
                 </style>
             </head>
             <body>
