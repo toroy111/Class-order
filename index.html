@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>樸素方格記錄表</title>
+    <title>JAF 記錄表</title>
     <style>
         :root {
             --grid-color: #d1d5db;
@@ -201,7 +201,7 @@
 <!-- 📊 主系統介面 -->
 <div class="container" id="mainContainer">
     <div class="header-row">
-        <h2>樸素方格記錄表 (雲端同步版)</h2>
+        <h2>JAF 記錄表 (雲端同步版)</h2>
         <!-- 登出按鈕 -->
         <button class="danger" onclick="logout()">登出系統</button>
     </div>
@@ -245,26 +245,20 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-const logoutBtn = document.getElementById("logoutBtn");
 
-logoutBtn.addEventListener("click", () => {
-    if (confirm("確定要登出系統嗎？")) {
-        sessionStorage.removeItem("isAdminAuth");
-        location.reload();
-    }
-});
-    // ⚠️ 請填入你的 Firebase 專案設定資訊
+    // Firebase 專案設定
     const firebaseConfig = {
-         apiKey: "AIzaSyAXXYDNoS6DN8oHg4rczYHQcyHJCiaAX8A",
-  authDomain: "class-order-130c4.firebaseapp.com",
-  projectId: "class-order-130c4",
-  storageBucket: "class-order-130c4.firebasestorage.app",
-  messagingSenderId: "462858612018",
-  appId: "1:462858612018:web:16aaed06fe1bcf09f6fb2b",
-  measurementId: "G-GJPHB21BDB"
+        apiKey: "AIzaSyAgeP2a6Z-TqJaZ5F0j_2UoXVQ_WE3sckw",
+        authDomain: "jaffff-34d02.firebaseapp.com",
+        databaseURL: "https://jaffff-34d02-default-rtdb.firebaseio.com",
+        projectId: "jaffff-34d02",
+        storageBucket: "jaffff-34d02.firebasestorage.app",
+        messagingSenderId: "332430248808",
+        appId: "1:332430248808:web:7d73ad95381dd1f3e664dd",
+        measurementId: "G-LQYZZV98HC"
     };
 
-    // 初始化 Firebase 與 Realtime Database
+    // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const dbRef = ref(db, 'tableData');
@@ -277,9 +271,18 @@ logoutBtn.addEventListener("click", () => {
     const passwordInput = document.getElementById("passwordInput");
     const errorMsg = document.getElementById("errorMsg");
 
-    const ADMIN_PASSWORD = "admin"; // 👈 可修改密碼
+    const ADMIN_PASSWORD = "admin"; // 👈 預設登入密碼
     let selectedCell = null;
-    let isUpdatingFromCloud = false; // 防止循環更新的旗標
+    let isUpdatingFromCloud = false;
+
+    // 預設的初始表格資料 (解決 Firebase 為空時無法顯示的問題)
+    const defaultData = {
+        headers: ["欄位 1", "欄位 2", "欄位 3"],
+        rows: [
+            ["內容 A1", "內容 B1", "內容 C1"],
+            ["內容 A2", "內容 B2", "內容 C2"]
+        ]
+    };
 
     // 網頁開啟時檢查登入狀態
     document.addEventListener("DOMContentLoaded", () => {
@@ -292,7 +295,7 @@ logoutBtn.addEventListener("click", () => {
         }
     });
 
-    // 提交密碼驗證
+    // 修正：明確將 submitLogin 掛載到全域 window 上，解決按鈕無法點擊問題
     window.submitLogin = function() {
         const inputVal = passwordInput.value;
         if (inputVal === ADMIN_PASSWORD) {
@@ -304,8 +307,15 @@ logoutBtn.addEventListener("click", () => {
             passwordInput.value = "";
             passwordInput.focus();
         }
+    };
 
-    }
+    // 修正：明確將 logout 掛載到全域 window 上
+    window.logout = function() {
+        if (confirm("確定要登出系統嗎？")) {
+            sessionStorage.removeItem("isAdminAuth");
+            location.reload();
+        }
+    };
 
     // 顯示主介面並監聽 Firebase 資料
     function showApp() {
@@ -320,6 +330,9 @@ logoutBtn.addEventListener("click", () => {
                 renderTableData(data);
                 bindCellEvents();
                 isUpdatingFromCloud = false;
+            } else {
+                // 修正：如果 Firebase 目前完全沒有資料，自動寫入預設資料進行初始化
+                set(dbRef, defaultData);
             }
         });
 
@@ -331,15 +344,6 @@ logoutBtn.addEventListener("click", () => {
         });
     }
 
-   // 登出功能 (掛載到全域 window 物件)
-window.logout = function() {
-    if (confirm("確定要登出系統嗎？")) {
-        // 清除登入狀態的 Session
-        sessionStorage.removeItem("isAdminAuth");
-        // 重新載入頁面，系統會自動跳回登入視窗
-        location.reload();
-    }
-};
     // 綁定儲存格點選事件
     function bindCellEvents() {
         table.querySelectorAll("th, td").forEach(cell => {
@@ -350,7 +354,6 @@ window.logout = function() {
         });
     }
 
-    // 處理點選高亮邏輯
     function handleCellFocus(e) {
         if (selectedCell) {
             selectedCell.classList.remove("selected-cell");
@@ -359,18 +362,15 @@ window.logout = function() {
         selectedCell.classList.add("selected-cell");
     }
 
-    // 取得當前選中的列與欄資訊
     function getSelectedPosition() {
         if (!selectedCell) return null;
-
         const cell = selectedCell;
         const colIndex = cell.cellIndex;
         const row = cell.parentElement;
-
         return { row, cell, colIndex };
     }
 
-    // 1. 在下方新增橫列
+    // 修正：全部操作函式皆綁定至全域 window，確保 HTML 按鈕觸發正常
     window.addRowBelowSelected = function() {
         const pos = getSelectedPosition();
         const colCount = tableHeader.cells.length;
@@ -391,9 +391,8 @@ window.logout = function() {
 
         bindCellEvents();
         saveTableDataToCloud();
-    }
+    };
 
-    // 2. 刪除選中的橫列
     window.removeSelectedRow = function() {
         const pos = getSelectedPosition();
 
@@ -421,9 +420,8 @@ window.logout = function() {
         selectedCell = null;
         bindCellEvents();
         saveTableDataToCloud();
-    }
+    };
 
-    // 3. 在右側新增直欄
     window.addColumnRightSelected = function() {
         const pos = getSelectedPosition();
         const colIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
@@ -448,9 +446,8 @@ window.logout = function() {
 
         bindCellEvents();
         saveTableDataToCloud();
-    }
+    };
 
-    // 4. 刪除選中的直欄
     window.removeSelectedColumn = function() {
         if (tableHeader.cells.length <= 1) {
             alert("至少需保留一欄！");
@@ -471,9 +468,8 @@ window.logout = function() {
         selectedCell = null;
         bindCellEvents();
         saveTableDataToCloud();
-    }
+    };
 
-    // 5. 將表格資料儲存至 Firebase 雲端
     function saveTableDataToCloud() {
         const headers = Array.from(tableHeader.cells).map(cell => cell.textContent);
         const rows = Array.from(tableBody.rows).map(row => 
@@ -484,13 +480,11 @@ window.logout = function() {
         set(dbRef, tableData);
     }
 
-    // 6. 渲染從 Firebase 抓回來的資料
     function renderTableData(data) {
         if (!data || !data.headers || !data.rows) return;
 
         const { headers, rows } = data;
 
-        // 渲染表頭
         tableHeader.innerHTML = "";
         headers.forEach(text => {
             const th = document.createElement("th");
@@ -499,7 +493,6 @@ window.logout = function() {
             tableHeader.appendChild(th);
         });
 
-        // 渲染內容
         tableBody.innerHTML = "";
         rows.forEach(rowData => {
             const tr = document.createElement("tr");
@@ -513,19 +506,11 @@ window.logout = function() {
         });
     }
 
-    // 7. 重設清空資料
     window.clearData = function() {
         if (confirm("確定要清空並重設雲端表格嗎？")) {
-            const initialData = {
-                headers: ["欄位 1", "欄位 2", "欄位 3"],
-                rows: [
-                    ["內容 A1", "內容 B1", "內容 C1"],
-                    ["內容 A2", "內容 B2", "內容 C2"]
-                ]
-            };
-            set(dbRef, initialData);
+            set(dbRef, defaultData);
         }
-    }
+    };
 </script>
 
 </body>
