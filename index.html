@@ -184,6 +184,7 @@
             border-radius: 4px;
             min-width: 32px;
             height: 32px;
+            cursor: pointer;
         }
 
         .editor-btn:hover {
@@ -277,47 +278,15 @@
             background-color: var(--hover-bg);
         }
 
-        /* 📱 手機版專屬微調 */
         @media (max-width: 600px) {
-            body {
-                padding: 10px 8px;
-            }
-
-            .container {
-                padding: 14px 10px;
-                border-radius: 8px;
-            }
-
-            h2 {
-                font-size: 16px;
-            }
-
-            .toolbar button {
-                flex: 1 1 calc(50% - 6px);
-                padding: 8px 6px;
-                font-size: 12px;
-            }
-
-            .toolbar button.danger, .toolbar button.success {
-                flex: 1 1 100%;
-                margin-left: 0 !important;
-            }
-
-            .text-editor-toolbar {
-                gap: 4px;
-                padding: 6px;
-            }
-
-            .editor-btn {
-                padding: 4px 8px;
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px 10px;
-                font-size: 13px;
-                min-width: 90px;
-            }
+            body { padding: 10px 8px; }
+            .container { padding: 14px 10px; border-radius: 8px; }
+            h2 { font-size: 16px; }
+            .toolbar button { flex: 1 1 calc(50% - 6px); padding: 8px 6px; font-size: 12px; }
+            .toolbar button.danger, .toolbar button.success { flex: 1 1 100%; margin-left: 0 !important; }
+            .text-editor-toolbar { gap: 4px; padding: 6px; }
+            .editor-btn { padding: 4px 8px; font-size: 12px; }
+            th, td { padding: 8px 10px; font-size: 13px; min-width: 90px; }
         }
     </style>
 </head>
@@ -346,25 +315,27 @@
         <button onmousedown="event.preventDefault()" onclick="removeSelectedRow()">- 刪除此橫列</button>
         <button onmousedown="event.preventDefault()" onclick="addColumnRightSelected()">+ 右側新增欄</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedColumn()">- 刪除此直欄</button>
-        <!-- 📄 新增導出 Word 檔案按鈕 -->
         <button class="success" onclick="exportToWord()" style="margin-left: auto;">📄 匯出 Word 檔</button>
         <button class="danger" onclick="clearData()">清空重設</button>
     </div>
 
     <!-- 📝 Word 風格文字編輯排版工具列 -->
     <div class="text-editor-toolbar">
-        <select class="editor-select" onchange="formatText('fontSize', this.value); this.selectedIndex=0;" onmousedown="event.preventDefault()">
+        <!-- 字型大小 -->
+        <select class="editor-select" id="fontSizeSelect" onchange="setFontSize(this.value); this.selectedIndex=0;" onmousedown="event.preventDefault()">
             <option value="" disabled selected>字型大小</option>
-            <option value="1">極小 (10px)</option>
-            <option value="2">小 (13px)</option>
-            <option value="3">標準 (16px)</option>
-            <option value="4">中 (18px)</option>
-            <option value="5">大 (24px)</option>
-            <option value="6">極大 (32px)</option>
+            <option value="12px">12 px</option>
+            <option value="14px">14 px</option>
+            <option value="16px">16 px</option>
+            <option value="18px">18 px</option>
+            <option value="20px">20 px</option>
+            <option value="24px">24 px</option>
+            <option value="28px">28 px</option>
         </select>
 
         <div class="divider"></div>
 
+        <!-- 粗體、斜體、底線、刪除線 -->
         <button class="editor-btn" title="粗體" onmousedown="event.preventDefault()" onclick="formatText('bold')"><b>B</b></button>
         <button class="editor-btn" title="斜體" onmousedown="event.preventDefault()" onclick="formatText('italic')"><i>I</i></button>
         <button class="editor-btn" title="底線" onmousedown="event.preventDefault()" onclick="formatText('underline')"><u>U</u></button>
@@ -372,24 +343,28 @@
 
         <div class="divider"></div>
 
+        <!-- 文字顏色 -->
         <div class="editor-color-wrapper" title="文字顏色">
             <span><b>A</b></span>
-            <input type="color" onchange="formatText('foreColor', this.value)">
+            <input type="color" onmousedown="saveSelection()" onchange="formatText('foreColor', this.value)">
         </div>
 
+        <!-- 螢光筆背景色 -->
         <div class="editor-color-wrapper" title="文字背景螢光色">
             <span>🖌️</span>
-            <input type="color" value="#ffff00" onchange="formatText('hiliteColor', this.value)">
+            <input type="color" value="#ffff00" onmousedown="saveSelection()" onchange="formatText('hiliteColor', this.value)">
         </div>
 
         <div class="divider"></div>
 
+        <!-- 對齊方式 -->
         <button class="editor-btn" title="靠左對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyLeft')">⬅️</button>
         <button class="editor-btn" title="置中對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyCenter')">↔️</button>
         <button class="editor-btn" title="靠右對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyRight')">➡️</button>
 
         <div class="divider"></div>
 
+        <!-- 清除格式 -->
         <button class="editor-btn" title="清除文字格式" onmousedown="event.preventDefault()" onclick="formatText('removeFormat')">🧹 清除格式</button>
     </div>
 
@@ -453,6 +428,7 @@
     let selectedCell = null;
     let isUpdatingFromCloud = false;
     let isComposing = false;
+    let savedRange = null; // 紀錄使用者選取的文字範圍
 
     const defaultData = {
         headers: ["欄位 1", "欄位 2", "欄位 3"],
@@ -470,7 +446,31 @@
             loginModal.style.display = "flex";
             passwordInput.focus();
         }
+
+        // 當在頁面上記錄選取範圍時保存 state
+        document.addEventListener('selectionchange', saveSelection);
     });
+
+    // 💾 記錄目前游標/反白文字的選取範圍
+    function saveSelection() {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) {
+            const range = sel.getRangeAt(0);
+            // 確保選取的範疇是在表格內
+            if (table.contains(range.commonAncestorContainer)) {
+                savedRange = range.cloneRange();
+            }
+        }
+    }
+
+    // 🔄 還原文字選取範圍
+    function restoreSelection() {
+        if (savedRange) {
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+        }
+    }
 
     function submitLogin() {
         const inputVal = passwordInput.value;
@@ -492,41 +492,44 @@
         }
     }
 
+    // 📝 格式變更處理
     function formatText(command, value = null) {
+        restoreSelection(); // 先還原剛才反白的文字
+        document.execCommand('styleWithCSS', false, true); // 使用 CSS 樣式模式
         document.execCommand(command, false, value);
         saveTableDataToCloud();
     }
 
+    // 📏 精準修改字型大小 (使用 Inline CSS)
+    function setFontSize(pxSize) {
+        restoreSelection();
+        const sel = window.getSelection();
+        if (!sel.isCollapsed && savedRange) {
+            const span = document.createElement('span');
+            span.style.fontSize = pxSize;
+            try {
+                savedRange.surroundContents(span);
+            } catch(e) {
+                document.execCommand('fontSize', false, '3');
+            }
+            saveTableDataToCloud();
+        }
+    }
+
     /* 📄 導出成 Word 檔案 (.doc) */
     function exportToWord() {
-        // 複製表格元素，避免影響畫面 display
         const tableClone = table.cloneNode(true);
-        
-        // 清除選擇樣式類名
         tableClone.querySelectorAll('.selected-cell').forEach(el => el.classList.remove('selected-cell'));
 
-        // 建立相容於 Word 的 HTML 結構檔頭與表格樣式
         const wordHTML = `
             <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
             <head>
                 <meta charset='utf-8'>
                 <title>JAF 記錄表</title>
                 <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                        font-family: Arial, sans-serif;
-                    }
-                    th, td {
-                        border: 1px solid #000000;
-                        padding: 8px 12px;
-                        font-size: 14px;
-                        vertical-align: top;
-                    }
-                    th {
-                        background-color: #f3f4f6;
-                        font-weight: bold;
-                    }
+                    table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
+                    th, td { border: 1px solid #000000; padding: 8px 12px; font-size: 14px; vertical-align: top; }
+                    th { background-color: #f3f4f6; font-weight: bold; }
                 </style>
             </head>
             <body>
@@ -536,12 +539,7 @@
             </html>
         `;
 
-        // 轉換為 Blob 物件
-        const blob = new Blob(['\ufeff' + wordHTML], {
-            type: 'application/msword;charset=utf-8'
-        });
-
-        // 動態生成下載連結並觸發下載
+        const blob = new Blob(['\ufeff' + wordHTML], { type: 'application/msword;charset=utf-8' });
         const today = new Date().toISOString().split('T')[0];
         const fileName = `JAF_記錄表_${today}.doc`;
 
@@ -576,15 +574,8 @@
             }
         });
 
-        table.addEventListener("compositionstart", function() {
-            isComposing = true;
-        });
-
-        table.addEventListener("compositionend", function() {
-            isComposing = false;
-            saveTableDataToCloud();
-        });
-
+        table.addEventListener("compositionstart", function() { isComposing = true; });
+        table.addEventListener("compositionend", function() { isComposing = false; saveTableDataToCloud(); });
         table.addEventListener("input", function() {
             if (!isUpdatingFromCloud && !isComposing) {
                 saveTableDataToCloud();
@@ -644,26 +635,15 @@
 
     function removeSelectedRow() {
         const pos = getSelectedPosition();
-
         if (!pos) {
             if (tableBody.rows.length > 1) {
                 tableBody.deleteRow(-1);
                 saveTableDataToCloud();
-            } else {
-                alert("至少需保留一列資料！");
-            }
+            } else { alert("至少需保留一列資料！"); }
             return;
         }
-
-        if (pos.row.parentElement.tagName === "THEAD") {
-            alert("不能刪除標題表頭列！");
-            return;
-        }
-
-        if (tableBody.rows.length <= 1) {
-            alert("至少需保留一列資料！");
-            return;
-        }
+        if (pos.row.parentElement.tagName === "THEAD") { alert("不能刪除標題表頭列！"); return; }
+        if (tableBody.rows.length <= 1) { alert("至少需保留一列資料！"); return; }
 
         pos.row.remove();
         selectedCell = null;
@@ -686,11 +666,8 @@
             const newTd = document.createElement("td");
             newTd.contentEditable = "true";
             newTd.innerHTML = "";
-            if (tds[colIndex]) {
-                tds[colIndex].after(newTd);
-            } else {
-                row.appendChild(newTd);
-            }
+            if (tds[colIndex]) { tds[colIndex].after(newTd); } 
+            else { row.appendChild(newTd); }
         });
 
         bindCellEvents();
@@ -698,20 +675,14 @@
     }
 
     function removeSelectedColumn() {
-        if (tableHeader.cells.length <= 1) {
-            alert("至少需保留一欄！");
-            return;
-        }
-
+        if (tableHeader.cells.length <= 1) { alert("至少需保留一欄！"); return; }
         const pos = getSelectedPosition();
         const targetColIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
 
         tableHeader.deleteCell(targetColIndex);
 
         Array.from(tableBody.rows).forEach(function(row) {
-            if (row.cells[targetColIndex]) {
-                row.deleteCell(targetColIndex);
-            }
+            if (row.cells[targetColIndex]) { row.deleteCell(targetColIndex); }
         });
 
         selectedCell = null;
