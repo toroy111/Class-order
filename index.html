@@ -11,6 +11,7 @@
             --hover-bg: #f9fafb;
             --text-color: #374151;
             --primary-btn: #4b5563;
+            --success-btn: #059669;
             --danger-btn: #ef4444;
             --selected-bg: #eff6ff;
             --selected-border: #3b82f6;
@@ -153,6 +154,10 @@
             opacity: 0.9;
         }
 
+        button.success {
+            background-color: var(--success-btn);
+        }
+
         button.danger {
             background-color: var(--danger-btn);
         }
@@ -185,7 +190,7 @@
             background-color: #e5e7eb;
         }
 
-        .editor-select, .editor-color {
+        .editor-select {
             height: 32px;
             padding: 4px 8px;
             border: 1px solid #d1d5db;
@@ -247,7 +252,7 @@
             font-size: 14px;
             position: relative;
             word-break: break-word;
-            white-space: pre-wrap; /* 保留換行 */
+            white-space: pre-wrap;
         }
 
         th {
@@ -293,10 +298,9 @@
                 font-size: 12px;
             }
 
-            .toolbar button.danger {
+            .toolbar button.danger, .toolbar button.success {
                 flex: 1 1 100%;
                 margin-left: 0 !important;
-                margin-top: 4px;
             }
 
             .text-editor-toolbar {
@@ -336,18 +340,19 @@
         <button class="danger" onclick="logout()">登出</button>
     </div>
 
-    <!-- 表格結構操作按鈕 -->
+    <!-- 表格結構與匯出按鈕列 -->
     <div class="toolbar">
         <button onmousedown="event.preventDefault()" onclick="addRowBelowSelected()">+ 下方新增列</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedRow()">- 刪除此橫列</button>
         <button onmousedown="event.preventDefault()" onclick="addColumnRightSelected()">+ 右側新增欄</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedColumn()">- 刪除此直欄</button>
-        <button class="danger" onclick="clearData()" style="margin-left: auto;">清空重設</button>
+        <!-- 📄 新增導出 Word 檔案按鈕 -->
+        <button class="success" onclick="exportToWord()" style="margin-left: auto;">📄 匯出 Word 檔</button>
+        <button class="danger" onclick="clearData()">清空重設</button>
     </div>
 
     <!-- 📝 Word 風格文字編輯排版工具列 -->
     <div class="text-editor-toolbar">
-        <!-- 字體大小 -->
         <select class="editor-select" onchange="formatText('fontSize', this.value); this.selectedIndex=0;" onmousedown="event.preventDefault()">
             <option value="" disabled selected>字型大小</option>
             <option value="1">極小 (10px)</option>
@@ -360,7 +365,6 @@
 
         <div class="divider"></div>
 
-        <!-- 粗體、斜體、底線、刪除線 -->
         <button class="editor-btn" title="粗體" onmousedown="event.preventDefault()" onclick="formatText('bold')"><b>B</b></button>
         <button class="editor-btn" title="斜體" onmousedown="event.preventDefault()" onclick="formatText('italic')"><i>I</i></button>
         <button class="editor-btn" title="底線" onmousedown="event.preventDefault()" onclick="formatText('underline')"><u>U</u></button>
@@ -368,13 +372,11 @@
 
         <div class="divider"></div>
 
-        <!-- 文字顏色 -->
         <div class="editor-color-wrapper" title="文字顏色">
             <span><b>A</b></span>
             <input type="color" onchange="formatText('foreColor', this.value)">
         </div>
 
-        <!-- 螢光筆背景色 -->
         <div class="editor-color-wrapper" title="文字背景螢光色">
             <span>🖌️</span>
             <input type="color" value="#ffff00" onchange="formatText('hiliteColor', this.value)">
@@ -382,14 +384,12 @@
 
         <div class="divider"></div>
 
-        <!-- 對齊方式 -->
         <button class="editor-btn" title="靠左對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyLeft')">⬅️</button>
         <button class="editor-btn" title="置中對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyCenter')">↔️</button>
         <button class="editor-btn" title="靠右對齊" onmousedown="event.preventDefault()" onclick="formatText('justifyRight')">➡️</button>
 
         <div class="divider"></div>
 
-        <!-- 清除格式 -->
         <button class="editor-btn" title="清除文字格式" onmousedown="event.preventDefault()" onclick="formatText('removeFormat')">🧹 清除格式</button>
     </div>
 
@@ -419,7 +419,7 @@
     </div>
 </div>
 
-<!-- 引入 Firebase SDK (Compat 相容版本) -->
+<!-- 引入 Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -449,12 +449,11 @@
     const passwordInput = document.getElementById("passwordInput");
     const errorMsg = document.getElementById("errorMsg");
 
-    const ADMIN_PASSWORD = "admin"; // 👈 登入密碼
+    const ADMIN_PASSWORD = "admin";
     let selectedCell = null;
     let isUpdatingFromCloud = false;
-    let isComposing = false; // 紀錄是否正在打注音中
+    let isComposing = false;
 
-    // 預設初始表格資料
     const defaultData = {
         headers: ["欄位 1", "欄位 2", "欄位 3"],
         rows: [
@@ -463,7 +462,6 @@
         ]
     };
 
-    // 網頁開啟時檢查登入狀態
     document.addEventListener("DOMContentLoaded", function() {
         const isAuth = sessionStorage.getItem("isAdminAuth");
         if (isAuth === "true") {
@@ -474,7 +472,6 @@
         }
     });
 
-    // 🔑 登入驗證
     function submitLogin() {
         const inputVal = passwordInput.value;
         if (inputVal === ADMIN_PASSWORD) {
@@ -488,7 +485,6 @@
         }
     }
 
-    // 🚪 登出功能
     function logout() {
         if (confirm("確定要登出系統嗎？")) {
             sessionStorage.removeItem("isAdminAuth");
@@ -496,22 +492,78 @@
         }
     }
 
-    // 📝 執行 Word 富文本編輯命令
     function formatText(command, value = null) {
         document.execCommand(command, false, value);
-        saveTableDataToCloud(); // 編輯排版後自動儲存至雲端
+        saveTableDataToCloud();
     }
 
-    // 顯示主介面並監聽 Firebase 資料
+    /* 📄 導出成 Word 檔案 (.doc) */
+    function exportToWord() {
+        // 複製表格元素，避免影響畫面 display
+        const tableClone = table.cloneNode(true);
+        
+        // 清除選擇樣式類名
+        tableClone.querySelectorAll('.selected-cell').forEach(el => el.classList.remove('selected-cell'));
+
+        // 建立相容於 Word 的 HTML 結構檔頭與表格樣式
+        const wordHTML = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset='utf-8'>
+                <title>JAF 記錄表</title>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                        font-family: Arial, sans-serif;
+                    }
+                    th, td {
+                        border: 1px solid #000000;
+                        padding: 8px 12px;
+                        font-size: 14px;
+                        vertical-align: top;
+                    }
+                    th {
+                        background-color: #f3f4f6;
+                        font-weight: bold;
+                    }
+                </style>
+            </head>
+            <body>
+                <h2>JAF 記錄表</h2>
+                ${tableClone.outerHTML}
+            </body>
+            </html>
+        `;
+
+        // 轉換為 Blob 物件
+        const blob = new Blob(['\ufeff' + wordHTML], {
+            type: 'application/msword;charset=utf-8'
+        });
+
+        // 動態生成下載連結並觸發下載
+        const today = new Date().toISOString().split('T')[0];
+        const fileName = `JAF_記錄表_${today}.doc`;
+
+        if (navigator.msSaveOrOpenBlob) {
+            navigator.msSaveOrOpenBlob(blob, fileName);
+        } else {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
     function showApp() {
         loginModal.style.display = "none";
         mainContainer.style.display = "block";
 
-        // 監聽 Firebase 雲端資料變動 (即時同步)
         dbRef.on('value', function(snapshot) {
             const data = snapshot.val();
             if (data) {
-                // 如果使用者正在編輯輸入中，先不強制刷掉畫面
                 if (document.activeElement && document.activeElement.isContentEditable) {
                     return;
                 }
@@ -524,7 +576,6 @@
             }
         });
 
-        // 解決注音斷字問題：監聽輸入法狀態
         table.addEventListener("compositionstart", function() {
             isComposing = true;
         });
@@ -534,7 +585,6 @@
             saveTableDataToCloud();
         });
 
-        // 監聽本地輸入事件
         table.addEventListener("input", function() {
             if (!isUpdatingFromCloud && !isComposing) {
                 saveTableDataToCloud();
@@ -542,7 +592,6 @@
         });
     }
 
-    // 綁定儲存格點選事件
     function bindCellEvents() {
         table.querySelectorAll("th, td").forEach(function(cell) {
             cell.removeEventListener("focus", handleCellFocus);
@@ -571,7 +620,6 @@
         return { row, cell, colIndex };
     }
 
-    // ➕ 下方新增橫列
     function addRowBelowSelected() {
         const pos = getSelectedPosition();
         const colCount = tableHeader.cells.length;
@@ -594,7 +642,6 @@
         saveTableDataToCloud();
     }
 
-    // ➖ 刪除橫列
     function removeSelectedRow() {
         const pos = getSelectedPosition();
 
@@ -624,7 +671,6 @@
         saveTableDataToCloud();
     }
 
-    // ➕ 右側新增直欄
     function addColumnRightSelected() {
         const pos = getSelectedPosition();
         const colIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
@@ -651,7 +697,6 @@
         saveTableDataToCloud();
     }
 
-    // ➖ 刪除直欄
     function removeSelectedColumn() {
         if (tableHeader.cells.length <= 1) {
             alert("至少需保留一欄！");
@@ -674,7 +719,6 @@
         saveTableDataToCloud();
     }
 
-    // 💾 儲存至雲端
     function saveTableDataToCloud() {
         const headers = Array.from(tableHeader.cells).map(function(cell) { return cell.innerHTML; });
         const rows = Array.from(tableBody.rows).map(function(row) { 
@@ -685,7 +729,6 @@
         dbRef.set(tableData);
     }
 
-    // 🖥 渲染雲端資料到表格
     function renderTableData(data) {
         if (!data || !data.headers || !data.rows) return;
 
@@ -713,7 +756,6 @@
         });
     }
 
-    // 🧹 清空重設
     function clearData() {
         if (confirm("確定要清空並重設雲端表格嗎？")) {
             dbRef.set(defaultData);
