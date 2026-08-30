@@ -261,14 +261,12 @@
             font-weight: 600;
         }
 
-        /* 當前點選/選取的儲存格高亮 */
         th.selected-cell, td.selected-cell {
             outline: 2px solid var(--selected-border) !important;
             outline-offset: -2px;
             background-color: var(--selected-bg) !important;
         }
 
-        /* 儲存格編輯狀態 */
         td[contenteditable="true"]:focus, th[contenteditable="true"]:focus {
             outline: 2px solid var(--selected-border);
             background-color: #ffffff;
@@ -388,12 +386,10 @@
     </div>
 </div>
 
-<!-- 引入 Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
 <script>
-    // Firebase 專案設定
     const firebaseConfig = {
         apiKey: "AIzaSyAgeP2a6Z-TqJaZ5F0j_2UoXVQ_WE3sckw",
         authDomain: "jaffff-34d02.firebaseapp.com",
@@ -503,19 +499,34 @@
         }
     }
 
-    /* 📄 精準美化 Word 導出模組 */
+    /* 📄 智慧偵測內容與邊界優化導出系統 */
     function exportToWord() {
+        const columnCount = tableHeader.cells.length;
         const tableClone = table.cloneNode(true);
 
-        // 移除選取框與 contenteditable 屬性
+        // 🧠 自動偵測欄位數量，決定 Word 版面方向與邊界距離
+        let pageOrientation = 'portrait';
+        let pageSize = 'A4 portrait';
+        let marginTop = '2.54cm', marginBottom = '2.54cm', marginLeft = '2.0cm', marginRight = '2.0cm';
+
+        if (columnCount >= 5) {
+            pageOrientation = 'landscape';
+            pageSize = 'A4 landscape';
+            marginTop = '1.5cm';
+            marginBottom = '1.5cm';
+            marginLeft = '1.5cm';
+            marginRight = '1.5cm';
+        }
+
+        // 清理高亮框並配置 Word 相容 Inline 樣式
         tableClone.querySelectorAll('th, td').forEach(cell => {
             cell.classList.remove('selected-cell');
             cell.removeAttribute('contenteditable');
             
-            // 轉換內嵌樣式以精準相容 Word
             cell.style.border = '1.0pt solid #d1d5db';
             cell.style.padding = '8px 12px';
             cell.style.fontSize = '14px';
+            cell.style.lineHeight = '1.5';
             cell.style.wordBreak = 'break-word';
             cell.style.whiteSpace = 'pre-wrap';
         });
@@ -543,8 +554,10 @@
                 <![endif]-->
                 <style>
                     @page {
-                        size: A4 portrait;
-                        margin: 2cm;
+                        size: ${pageSize};
+                        margin: ${marginTop} ${marginRight} ${marginBottom} ${marginLeft};
+                        mso-header-margin: 1.27cm;
+                        mso-footer-margin: 1.27cm;
                     }
                     body {
                         font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
@@ -554,10 +567,12 @@
                         font-size: 18pt;
                         margin-bottom: 12pt;
                         color: #111827;
+                        font-weight: bold;
                     }
                     table {
                         border-collapse: collapse;
                         width: 100%;
+                        table-layout: auto;
                         margin-top: 10px;
                         mso-yfti-tbllook: 1188;
                         mso-padding-alt: 0cm 5.4pt 0cm 5.4pt;
