@@ -241,7 +241,7 @@
     </div>
 </div>
 
-<!-- 引入 Firebase SDK (Compat 傳統相容版本，確保全域函式 100% 正常綁定) -->
+<!-- 引入 Firebase SDK (Compat 相容版本) -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -271,9 +271,10 @@
     const passwordInput = document.getElementById("passwordInput");
     const errorMsg = document.getElementById("errorMsg");
 
-    const ADMIN_PASSWORD = "admin"; // 👈 登入密碼 (可自訂)
+    const ADMIN_PASSWORD = "admin"; // 👈 登入密碼
     let selectedCell = null;
     let isUpdatingFromCloud = false;
+    let isComposing = false; // 👈 新增旗標：紀錄是否正在打注音中
 
     // 預設初始表格資料
     const defaultData = {
@@ -326,19 +327,32 @@
         dbRef.on('value', function(snapshot) {
             const data = snapshot.val();
             if (data) {
+                // 如果使用者正在編輯輸入中，先不強制刷掉畫面，避免打字被切斷
+                if (document.activeElement && document.activeElement.isContentEditable) {
+                    return;
+                }
                 isUpdatingFromCloud = true;
                 renderTableData(data);
                 bindCellEvents();
                 isUpdatingFromCloud = false;
             } else {
-                // 如果 Firebase 資料庫為空，自動補入初始資料
                 dbRef.set(defaultData);
             }
         });
 
-        // 監聽本地輸入事件，自動上傳至 Firebase
+        // 解決注音斷字問題：監聽輸入法狀態
+        table.addEventListener("compositionstart", function() {
+            isComposing = true; // 開始打注音/選字
+        });
+
+        table.addEventListener("compositionend", function() {
+            isComposing = false; // 完成選字
+            saveTableDataToCloud();
+        });
+
+        // 監聽本地輸入事件，只有在「非注音拼字狀態」下才同步
         table.addEventListener("input", function() {
-            if (!isUpdatingFromCloud) {
+            if (!isUpdatingFromCloud && !isComposing) {
                 saveTableDataToCloud();
             }
         });
@@ -349,8 +363,12 @@
         table.querySelectorAll("th, td").forEach(function(cell) {
             cell.removeEventListener("focus", handleCellFocus);
             cell.removeEventListener("mousedown", handleCellFocus);
+            cell.removeEventListener("blur", saveTableDataToCloud);
+            
             cell.addEventListener("focus", handleCellFocus);
             cell.addEventListener("mousedown", handleCellFocus);
+            // 離開儲存格（Focus 移開）時強制確保寫入雲端一次
+            cell.addEventListener("blur", saveTableDataToCloud);
         });
     }
 
