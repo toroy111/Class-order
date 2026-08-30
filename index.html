@@ -191,7 +191,6 @@
             background-color: #e5e7eb;
         }
 
-        /* 📋 複製格式（格式刷）啟用狀態樣式 */
         .editor-btn.active {
             background-color: #2563eb !important;
             color: #ffffff !important;
@@ -371,7 +370,7 @@
 <!-- 📊 主系統介面 -->
 <div class="container" id="mainContainer">
     <div class="header-row">
-        <h2>學人班工作細節 (雲端同步版)</h2>
+        <h2> 學人班工作細節 (雲端同步版)</h2>
         <button class="danger" onclick="logout()">登出</button>
     </div>
 
@@ -479,8 +478,6 @@
         <div class="divider"></div>
 
         <button class="editor-btn" title="清除文字格式" onmousedown="event.preventDefault()" onclick="formatText('removeFormat')">🧹 清除格式</button>
-        
-        <!-- ✨ 新增的「複製格式」按鈕 -->
         <button class="editor-btn" id="formatPainterBtn" title="複製格式" onmousedown="event.preventDefault()" onclick="copyFormat()">📋 複製格式</button>
     </div>
 
@@ -543,7 +540,6 @@
     let isComposing = false;
     let savedRange = null;
 
-    // 📋 複製格式變數
     let copiedStyle = null;
     let isFormatPainterActive = false;
 
@@ -572,7 +568,6 @@
             }
         });
 
-        // 監聽選取事件以套用複製的格式
         document.addEventListener('mouseup', applyCopiedFormat);
         document.addEventListener('keyup', applyCopiedFormat);
     });
@@ -652,7 +647,6 @@
         saveTableDataToCloud();
     }
 
-    /* 📋 複製格式機制 (格式刷) */
     function copyFormat() {
         restoreSelection();
         const sel = window.getSelection();
@@ -692,7 +686,6 @@
         restoreSelection();
         document.execCommand('styleWithCSS', false, true);
 
-        // 套用各種樣式
         document.execCommand('foreColor', false, copiedStyle.color);
         document.execCommand('hiliteColor', false, copiedStyle.backgroundColor);
         
@@ -707,7 +700,6 @@
             setFontSize(copiedStyle.fontSize);
         }
 
-        // 完成後解除格式刷狀態
         isFormatPainterActive = false;
         copiedStyle = null;
         document.getElementById('formatPainterBtn').classList.remove('active');
@@ -975,9 +967,20 @@
         });
     }
 
+    /* 🛡️ 雙重防誤觸清空機制 */
     function clearData() {
-        if (confirm("確定要清空並重設雲端表格嗎？")) {
+        // 第一重確認
+        const confirmFirst = confirm("⚠️ 警告：這將會【清除所有雲端資料】並還原為初始狀態！\n\n此動作無法復原，您確定要繼續嗎？");
+        if (!confirmFirst) return;
+
+        // 第二重確認 (輸入驗證碼 CLEAR)
+        const userInput = prompt("請在下方輸入 【 CLEAR 】 (大寫) 以確認清空表格：");
+        
+        if (userInput === "CLEAR") {
             dbRef.set(defaultData);
+            alert("已成功清空並重設所有表格資料！");
+        } else if (userInput !== null) {
+            alert("❌ 驗證文字輸入錯誤，清空動作已取消。");
         }
     }
 </script>
