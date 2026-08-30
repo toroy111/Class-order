@@ -202,24 +202,85 @@
             cursor: pointer;
         }
 
-        .editor-color-wrapper {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 12px;
-            background: #fff;
-            padding: 2px 6px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
+        /* 🎨 下拉色板元件 */
+        .color-picker-dropdown {
+            position: relative;
+            display: inline-block;
         }
 
-        .editor-color-wrapper input[type="color"] {
-            border: none;
-            width: 20px;
-            height: 20px;
-            padding: 0;
-            background: none;
+        .color-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 6px;
+            padding: 8px;
+            z-index: 100;
+            width: 210px;
+        }
+
+        .color-dropdown-menu.show {
+            display: block;
+        }
+
+        .color-section-title {
+            font-size: 11px;
+            color: #6b7280;
+            margin: 6px 0 4px 0;
+            font-weight: bold;
+        }
+
+        .color-palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .color-box {
+            width: 32px;
+            height: 24px;
+            border: 1px solid #d1d5db;
+            border-radius: 2px;
             cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .color-box:hover {
+            transform: scale(1.1);
+            border-color: #000;
+        }
+
+        .color-btn-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 6px;
+            background: none;
+            border: none;
+            color: #374151;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: left;
+            justify-content: flex-start;
+        }
+
+        .color-btn-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .custom-color-input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            pointer-events: none;
         }
 
         .divider {
@@ -339,14 +400,66 @@
 
         <div class="divider"></div>
 
-        <div class="editor-color-wrapper" title="文字顏色">
-            <span><b>A</b></span>
-            <input type="color" onmousedown="saveSelection()" onchange="formatText('foreColor', this.value)">
+        <!-- 🎨 Word 風格文字顏色選單 -->
+        <div class="color-picker-dropdown">
+            <button class="editor-btn" title="文字顏色" onmousedown="event.preventDefault()" onclick="toggleDropdown('textColorMenu')">
+                <span style="font-weight:bold; border-bottom: 3px solid red;">A</span> ▾
+            </button>
+            <div class="color-dropdown-menu" id="textColorMenu">
+                <button class="color-btn-item" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#000000'); closeDropdowns();">
+                    <span style="display:inline-block; width:14px; height:14px; background:#000;"></span> 自動 (黑色)
+                </button>
+                <div class="color-section-title">標準色彩</div>
+                <div class="color-palette-grid">
+                    <div class="color-box" style="background:#c00000;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#c00000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#ff0000;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#ff0000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#ffc000;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#ffc000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#ffff00;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#ffff00'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#92d050;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#92d050'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#00b0f0;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#00b0f0'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#0070c0;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#0070c0'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#002060;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#002060'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#7030a0;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#7030a0'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#000000;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#000000'); closeDropdowns();"></div>
+                </div>
+                <button class="color-btn-item" onmousedown="event.preventDefault()" onclick="document.getElementById('customTextColor').click();">
+                    🎨 其他色彩...
+                </button>
+                <input type="color" id="customTextColor" class="custom-color-input" onchange="formatText('foreColor', this.value); closeDropdowns();">
+            </div>
         </div>
 
-        <div class="editor-color-wrapper" title="文字背景螢光色">
-            <span>🖌️</span>
-            <input type="color" value="#ffff00" onmousedown="saveSelection()" onchange="formatText('hiliteColor', this.value)">
+        <!-- 🖌️ Word 風格背景顏色（醒目提示）選單 -->
+        <div class="color-picker-dropdown">
+            <button class="editor-btn" title="文字背景螢光色" onmousedown="event.preventDefault()" onclick="toggleDropdown('bgColorMenu')">
+                <span>ab<b>y</b></span> ▾
+            </button>
+            <div class="color-dropdown-menu" id="bgColorMenu">
+                <div class="color-palette-grid" style="grid-template-columns: repeat(5, 1fr);">
+                    <div class="color-box" style="background:#ffff00;" title="黃色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#ffff00'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#00ff00;" title="亮綠色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#00ff00'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#00ffff;" title="青色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#00ffff'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#ff00ff;" title="粉紅" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#ff00ff'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#0000ff;" title="藍色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#0000ff'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#ff0000;" title="紅色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#ff0000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#000080;" title="深藍" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#000080'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#008080;" title="藍綠" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#008080'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#008000;" title="綠色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#008000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#800080;" title="紫色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#800080'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#800000;" title="深紅" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#800000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#808000;" title="橄欖綠" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#808000'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#808080;" title="灰色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#808080'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#c0c0c0;" title="淺灰" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#c0c0c0'); closeDropdowns();"></div>
+                    <div class="color-box" style="background:#000000;" title="黑色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#000000'); closeDropdowns();"></div>
+                </div>
+                <button class="color-btn-item" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', 'transparent'); closeDropdowns();">
+                    🚫 無色彩
+                </button>
+                <button class="color-btn-item" onmousedown="event.preventDefault()" onclick="document.getElementById('customBgColor').click();">
+                    🎨 自訂背景色彩...
+                </button>
+                <input type="color" id="customBgColor" class="custom-color-input" onchange="formatText('hiliteColor', this.value); closeDropdowns();">
+            </div>
         </div>
 
         <div class="divider"></div>
@@ -437,7 +550,27 @@
         }
 
         document.addEventListener('selectionchange', saveSelection);
+
+        // 點擊空白處自動關閉色板選單
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.color-picker-dropdown')) {
+                closeDropdowns();
+            }
+        });
     });
+
+    function toggleDropdown(menuId) {
+        const targetMenu = document.getElementById(menuId);
+        const isOpen = targetMenu.classList.contains('show');
+        closeDropdowns();
+        if (!isOpen) {
+            targetMenu.classList.add('show');
+        }
+    }
+
+    function closeDropdowns() {
+        document.querySelectorAll('.color-dropdown-menu').forEach(menu => menu.classList.remove('show'));
+    }
 
     function saveSelection() {
         const sel = window.getSelection();
@@ -499,26 +632,13 @@
         }
     }
 
-    /* 📄 智慧偵測內容與邊界優化導出系統 */
     function exportToWord() {
         const columnCount = tableHeader.cells.length;
         const tableClone = table.cloneNode(true);
 
-        // 🧠 自動偵測欄位數量，決定 Word 版面方向與邊界距離
-        let pageOrientation = 'portrait';
-        let pageSize = 'A4 portrait';
-        let marginTop = '2.54cm', marginBottom = '2.54cm', marginLeft = '2.0cm', marginRight = '2.0cm';
+        let pageSize = columnCount >= 5 ? 'A4 landscape' : 'A4 portrait';
+        let marginSize = columnCount >= 5 ? '1.5cm' : '2.0cm';
 
-        if (columnCount >= 5) {
-            pageOrientation = 'landscape';
-            pageSize = 'A4 landscape';
-            marginTop = '1.5cm';
-            marginBottom = '1.5cm';
-            marginLeft = '1.5cm';
-            marginRight = '1.5cm';
-        }
-
-        // 清理高亮框並配置 Word 相容 Inline 樣式
         tableClone.querySelectorAll('th, td').forEach(cell => {
             cell.classList.remove('selected-cell');
             cell.removeAttribute('contenteditable');
@@ -555,9 +675,7 @@
                 <style>
                     @page {
                         size: ${pageSize};
-                        margin: ${marginTop} ${marginRight} ${marginBottom} ${marginLeft};
-                        mso-header-margin: 1.27cm;
-                        mso-footer-margin: 1.27cm;
+                        margin: ${marginSize};
                     }
                     body {
                         font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
@@ -574,12 +692,6 @@
                         width: 100%;
                         table-layout: auto;
                         margin-top: 10px;
-                        mso-yfti-tbllook: 1188;
-                        mso-padding-alt: 0cm 5.4pt 0cm 5.4pt;
-                    }
-                    tr {
-                        mso-yfti-irow: 0;
-                        mso-yfti-firstrow: yes;
                     }
                     th, td {
                         mso-border-alt: solid #d1d5db .5pt;
