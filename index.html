@@ -380,7 +380,8 @@
 
     <!-- 📝 Word 風格文字編輯排版工具列 -->
     <div class="text-editor-toolbar">
-        <select class="editor-select" id="fontSizeSelect" onchange="setFontSize(this.value); this.selectedIndex=0;" onmousedown="event.preventDefault()">
+        <!-- 🔤 修正後的字型大小選單 -->
+        <select class="editor-select" id="fontSizeSelect" onfocus="saveSelection()" onchange="setFontSize(this.value); this.selectedIndex=0;">
             <option value="" disabled selected>字型大小</option>
             <option value="12px">12 px</option>
             <option value="14px">14 px</option>
@@ -429,7 +430,7 @@
             </div>
         </div>
 
-        <!-- 🖌️ Word 風格背景顏色（醒目提示）選單 -->
+        <!-- 🖌️ Word 風格背景顏色選單 -->
         <div class="color-picker-dropdown">
             <button class="editor-btn" title="文字背景螢光色" onmousedown="event.preventDefault()" onclick="toggleDropdown('bgColorMenu')">
                 <span>ab<b>y</b></span> ▾
@@ -551,7 +552,6 @@
 
         document.addEventListener('selectionchange', saveSelection);
 
-        // 點擊空白處自動關閉色板選單
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.color-picker-dropdown')) {
                 closeDropdowns();
@@ -617,19 +617,23 @@
         saveTableDataToCloud();
     }
 
+    /* 🔤 強化版字型大小套用機制 */
     function setFontSize(pxSize) {
         restoreSelection();
-        const sel = window.getSelection();
-        if (!sel.isCollapsed && savedRange) {
+        if (!savedRange) return;
+
+        // 套用標籤並取代 style 的 px 值
+        document.execCommand('fontSize', false, '7'); // 暫時標記 font size 7
+        
+        const fontElements = table.querySelectorAll('font[size="7"]');
+        fontElements.forEach(el => {
             const span = document.createElement('span');
             span.style.fontSize = pxSize;
-            try {
-                savedRange.surroundContents(span);
-            } catch(e) {
-                document.execCommand('fontSize', false, '3');
-            }
-            saveTableDataToCloud();
-        }
+            span.innerHTML = el.innerHTML;
+            el.parentNode.replaceChild(span, el);
+        });
+
+        saveTableDataToCloud();
     }
 
     function exportToWord() {
