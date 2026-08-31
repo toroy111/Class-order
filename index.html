@@ -307,6 +307,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyAgeP2a6Z-TqJaZ5F0j_2UoXVQ_WE3sckw",
@@ -528,7 +531,7 @@
         });
     }
 
-    /* 🔗 儲存格合併 */
+    /* 🔗 儲存格合併 (優化後) */
     function mergeSelectedCells() {
         if (selectedCells.length <= 1) {
             alert("請按住滑鼠拖曳，同時選擇至少兩個以上的儲存格來進行合併！");
@@ -558,6 +561,7 @@
         targetCell.rowSpan = (maxR - minR + 1);
         targetCell.colSpan = (maxC - minC + 1);
         targetCell.innerHTML = mergedHTML;
+        targetCell.setAttribute('contenteditable', 'true');
 
         selectedCells.slice(1).forEach(cell => cell.remove());
 
@@ -567,7 +571,7 @@
         saveTableDataToCloud();
     }
 
-    /* ✂️ 取消合併 */
+    /* ✂️ 取消合併 (優化後) */
     function unmergeSelectedCell() {
         if (selectedCells.length !== 1) {
             alert("請選擇一個已合併的儲存格來執行取消合併操作！");
@@ -594,7 +598,7 @@
             for (let c = 0; c < cSpan; c++) {
                 if (r === 0 && c === 0) continue;
                 const newTd = document.createElement(targetRow.parentElement.tagName === 'THEAD' ? 'th' : 'td');
-                newTd.contentEditable = "true";
+                newTd.setAttribute('contenteditable', 'true');
                 newTd.innerHTML = "";
                 
                 if (c < targetRow.cells.length) {
@@ -649,7 +653,7 @@
 
         for (let i = 0; i < colCount; i++) {
             const newCell = document.createElement("td");
-            newCell.contentEditable = "true";
+            newCell.setAttribute('contenteditable', 'true');
             newCell.innerHTML = "";
             newRow.appendChild(newCell);
         }
@@ -689,14 +693,14 @@
 
         const ths = Array.from(headerTr.cells);
         const newTh = document.createElement("th");
-        newTh.contentEditable = "true";
+        newTh.setAttribute('contenteditable', 'true');
         newTh.innerHTML = "欄位 " + (ths.length + 1);
         ths[colIndex].after(newTh);
 
         Array.from(tableBody.rows).forEach(function(row) {
             const tds = Array.from(row.cells);
             const newTd = document.createElement("td");
-            newTd.contentEditable = "true";
+            newTd.setAttribute('contenteditable', 'true');
             newTd.innerHTML = "";
             if (tds[colIndex]) { tds[colIndex].after(newTd); } 
             else { row.appendChild(newTd); }
@@ -723,8 +727,11 @@
         saveTableDataToCloud();
     }
 
-    /* 💾 關鍵修正：準確抓取 thead 與 tbody */
+    /* 💾 雲端儲存：儲存 before-export 清除高亮選擇框後的乾淨 HTML */
     function saveTableDataToCloud() {
+        // 先移除選取效果避免儲存到藍色外框
+        table.querySelectorAll('th, td').forEach(c => c.classList.remove('selected-cell'));
+
         const headerHTML = tableHeaderOwner.innerHTML;
         const bodyHTML = tableBody.innerHTML;
         const fullHTML = headerHTML + "|" + bodyHTML;
@@ -732,7 +739,7 @@
         dbRef.set({ html: fullHTML });
     }
 
-    /* 🔄 關鍵修正：正確認確載入表頭並重新賦予可編輯屬性 */
+    /* 🔄 雲端讀取：重新賦予 contenteditable 與點選事件 */
     function renderTableData(data) {
         if (!data) return;
 
@@ -742,7 +749,7 @@
                 tableHeaderOwner.innerHTML = parts[0];
                 tableBody.innerHTML = parts[1];
 
-                // 確保所有標題與儲存格都能點擊編輯
+                // 🔧 核心修復：強制賦予每個儲存格編輯權限
                 table.querySelectorAll('th, td').forEach(cell => {
                     cell.setAttribute('contenteditable', 'true');
                 });
