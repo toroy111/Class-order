@@ -192,7 +192,7 @@
         <button onmousedown="event.preventDefault()" onclick="addColumnRightSelected()">+ 右側新增欄</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedColumn()">- 刪除此直欄</button>
         
-        <!-- 🆕 新增：合併與拆分按鈕 -->
+        <!-- 🆕 合併與拆分按鈕 -->
         <button class="warning" onmousedown="event.preventDefault()" onclick="mergeSelectedCells()">🔗 合併儲存格</button>
         <button class="warning" onmousedown="event.preventDefault()" onclick="unmergeSelectedCell()">✂️ 取消合併</button>
 
@@ -288,9 +288,9 @@
         <table id="gridTable">
             <thead id="tableHeaderOwner">
                 <tr id="tableHeader">
-                    <th contenteditable="true">欄位 1</th>
-                    <th contenteditable="true">欄位 2</th>
-                    <th contenteditable="true">欄位 3</th>
+                    <th contenteditable="true">時間</th>
+                    <th contenteditable="true">班務</th>
+                    <th contenteditable="true">服務人員</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -298,11 +298,6 @@
                     <td contenteditable="true">內容 A1</td>
                     <td contenteditable="true">內容 B1</td>
                     <td contenteditable="true">內容 C1</td>
-                </tr>
-                <tr>
-                    <td contenteditable="true">內容 A2</td>
-                    <td contenteditable="true">內容 B2</td>
-                    <td contenteditable="true">內容 C2</td>
                 </tr>
             </tbody>
         </table>
@@ -329,7 +324,7 @@
     const dbRef = db.ref('tableData');
 
     const table = document.getElementById("gridTable");
-    const tableHeader = document.getElementById("tableHeader");
+    const tableHeaderOwner = document.getElementById("tableHeaderOwner");
     const tableBody = document.getElementById("tableBody");
     const mainContainer = document.getElementById("mainContainer");
     const loginModal = document.getElementById("loginModal");
@@ -350,7 +345,7 @@
     let selectedCells = [];
 
     const defaultData = {
-        html: `<tr><th contenteditable="true">欄位 1</th><th contenteditable="true">欄位 2</th><th contenteditable="true">欄位 3</th></tr>|<tr><td contenteditable="true">內容 A1</td><td contenteditable="true">內容 B1</td><td contenteditable="true">內容 C1</td></tr><tr><td contenteditable="true">內容 A2</td><td contenteditable="true">內容 B2</td><td contenteditable="true">內容 C2</td></tr>`
+        html: `<tr><th contenteditable="true">時間</th><th contenteditable="true">班務</th><th contenteditable="true">服務人員</th></tr>|<tr><td contenteditable="true">內容 A1</td><td contenteditable="true">內容 B1</td><td contenteditable="true">內容 C1</td></tr>`
     };
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -370,7 +365,6 @@
             }
         });
 
-        // 全局拖曳滑鼠mouseup事件，終止框框複選
         document.addEventListener('mouseup', function() {
             isSelecting = false;
         });
@@ -479,7 +473,7 @@
         document.getElementById('formatPainterBtn').classList.add('active');
     }
 
-    /* 🖱️ 多選儲存格邏輯 (Drag / Multi-select) */
+    /* 🖱️ 多選儲存格邏輯 */
     function getCellCoords(cell) {
         const row = cell.parentElement;
         const rowIndex = Array.from(table.querySelectorAll('tr')).indexOf(row);
@@ -517,7 +511,6 @@
     function initSelectionEvents() {
         table.querySelectorAll('th, td').forEach(cell => {
             cell.onmousedown = function(e) {
-                // 如果按住 Shift 鍵支援快速區域點選
                 if (e.shiftKey && startCell) {
                     selectCellRange(getCellCoords(startCell), getCellCoords(cell));
                     return;
@@ -535,14 +528,13 @@
         });
     }
 
-    /* 🔗 儲存格合併 (Merge Selected Cells) */
+    /* 🔗 儲存格合併 */
     function mergeSelectedCells() {
         if (selectedCells.length <= 1) {
             alert("請按住滑鼠拖曳，同時選擇至少兩個以上的儲存格來進行合併！");
             return;
         }
 
-        // 計算所選區域的矩形邊界
         let minR = Infinity, maxR = -1, minC = Infinity, maxC = -1;
         selectedCells.forEach(cell => {
             const { rowIndex, colIndex } = getCellCoords(cell);
@@ -557,7 +549,6 @@
         const targetCell = selectedCells[0];
         let mergedHTML = "";
 
-        // 收集所有被合併儲存格的文字內容
         selectedCells.forEach(cell => {
             if (cell.innerHTML.trim() && cell.innerHTML.trim() !== "<br>") {
                 mergedHTML += (mergedHTML ? " " : "") + cell.innerHTML.trim();
@@ -568,7 +559,6 @@
         targetCell.colSpan = (maxC - minC + 1);
         targetCell.innerHTML = mergedHTML;
 
-        // 刪除其餘被合併掉的舊儲存格
         selectedCells.slice(1).forEach(cell => cell.remove());
 
         clearSelection();
@@ -577,7 +567,7 @@
         saveTableDataToCloud();
     }
 
-    /* ✂️ 取消合併 (Unmerge Cell) */
+    /* ✂️ 取消合併 */
     function unmergeSelectedCell() {
         if (selectedCells.length !== 1) {
             alert("請選擇一個已合併的儲存格來執行取消合併操作！");
@@ -595,16 +585,14 @@
 
         const coords = getCellCoords(cell);
         const rows = Array.from(table.querySelectorAll('tr'));
-        const htmlContent = cell.innerHTML;
 
         cell.rowSpan = 1;
         cell.colSpan = 1;
 
-        // 補回拆分後的空格
         for (let r = 0; r < rSpan; r++) {
             const targetRow = rows[coords.rowIndex + r];
             for (let c = 0; c < cSpan; c++) {
-                if (r === 0 && c === 0) continue; // 第一個是原本的儲存格
+                if (r === 0 && c === 0) continue;
                 const newTd = document.createElement(targetRow.parentElement.tagName === 'THEAD' ? 'th' : 'td');
                 newTd.contentEditable = "true";
                 newTd.innerHTML = "";
@@ -649,9 +637,14 @@
         });
     }
 
+    function getHeaderTr() {
+        return tableHeaderOwner.querySelector("tr");
+    }
+
     function addRowBelowSelected() {
         const selected = selectedCells[0];
-        const colCount = tableHeader.cells.length;
+        const headerTr = getHeaderTr();
+        const colCount = headerTr ? headerTr.cells.length : 3;
         const newRow = document.createElement("tr");
 
         for (let i = 0; i < colCount; i++) {
@@ -691,9 +684,10 @@
 
     function addColumnRightSelected() {
         const selected = selectedCells[0];
-        const colIndex = selected ? selected.cellIndex : tableHeader.cells.length - 1;
+        const headerTr = getHeaderTr();
+        const colIndex = selected ? selected.cellIndex : headerTr.cells.length - 1;
 
-        const ths = Array.from(tableHeader.cells);
+        const ths = Array.from(headerTr.cells);
         const newTh = document.createElement("th");
         newTh.contentEditable = "true";
         newTh.innerHTML = "欄位 " + (ths.length + 1);
@@ -713,11 +707,12 @@
     }
 
     function removeSelectedColumn() {
-        if (tableHeader.cells.length <= 1) { alert("至少需保留一欄！"); return; }
+        const headerTr = getHeaderTr();
+        if (headerTr.cells.length <= 1) { alert("至少需保留一欄！"); return; }
         const selected = selectedCells[0];
-        const targetColIndex = selected ? selected.cellIndex : tableHeader.cells.length - 1;
+        const targetColIndex = selected ? selected.cellIndex : headerTr.cells.length - 1;
 
-        tableHeader.deleteCell(targetColIndex);
+        headerTr.deleteCell(targetColIndex);
 
         Array.from(tableBody.rows).forEach(function(row) {
             if (row.cells[targetColIndex]) { row.deleteCell(targetColIndex); }
@@ -728,22 +723,29 @@
         saveTableDataToCloud();
     }
 
+    /* 💾 關鍵修正：準確抓取 thead 與 tbody */
     function saveTableDataToCloud() {
-        const headerHTML = tableHeader.outerHTML;
+        const headerHTML = tableHeaderOwner.innerHTML;
         const bodyHTML = tableBody.innerHTML;
         const fullHTML = headerHTML + "|" + bodyHTML;
 
         dbRef.set({ html: fullHTML });
     }
 
+    /* 🔄 關鍵修正：正確認確載入表頭並重新賦予可編輯屬性 */
     function renderTableData(data) {
         if (!data) return;
 
         if (data.html) {
             const parts = data.html.split('|');
             if (parts.length === 2) {
-                tableHeader.outerHTML = parts[0];
+                tableHeaderOwner.innerHTML = parts[0];
                 tableBody.innerHTML = parts[1];
+
+                // 確保所有標題與儲存格都能點擊編輯
+                table.querySelectorAll('th, td').forEach(cell => {
+                    cell.setAttribute('contenteditable', 'true');
+                });
             }
         }
     }
