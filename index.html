@@ -353,7 +353,7 @@
         html: `<tr><th contenteditable="true">欄位 1</th><th contenteditable="true">欄位 2</th><th contenteditable="true">欄位 3</th></tr>|<tr><td contenteditable="true">內容 A1</td><td contenteditable="true">內容 B1</td><td contenteditable="true">內容 C1</td></tr><tr><td contenteditable="true">內容 A2</td><td contenteditable="true">內容 B2</td><td contenteditable="true">內容 C2</td></tr>`
     };
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", () {
         const isAuth = sessionStorage.getItem("isAdminAuth");
         if (isAuth === "true") {
             showApp();
@@ -364,14 +364,14 @@
 
         document.addEventListener('selectionchange', saveSelection);
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', (e) {
             if (!e.target.closest('.color-picker-dropdown')) {
                 closeDropdowns();
             }
         });
 
         // 全局拖曳滑鼠mouseup事件，終止框框複選
-        document.addEventListener('mouseup', function() {
+        document.addEventListener('mouseup', () {
             isSelecting = false;
         });
     });
@@ -744,10 +744,14 @@
             if (parts.length === 2) {
                 tableHeader.outerHTML = parts[0];
                 tableBody.innerHTML = parts[1];
+
+                // 🔧 補上這段：確保所有讀取出來的 th 與 td 都可以編輯
+                table.querySelectorAll('th, td').forEach(cell => {
+                    cell.setAttribute('contenteditable', 'true');
+                });
             }
         }
     }
-
     function exportToWord() {
         const tableClone = table.cloneNode(true);
 
