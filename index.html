@@ -13,6 +13,7 @@
             --primary-btn: #4b5563;
             --success-btn: #059669;
             --danger-btn: #ef4444;
+            --warning-btn: #d97706;
             --selected-bg: #eff6ff;
             --selected-border: #3b82f6;
         }
@@ -31,15 +32,13 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            user-select: none; /* 防止拉選表格時誤選文字 */
         }
 
-        /* 🔒 登入對話框樣式 */
         .login-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
@@ -58,300 +57,112 @@
             text-align: center;
         }
 
-        .login-card h3 {
-            margin-top: 0;
-            margin-bottom: 16px;
-            font-size: 18px;
-        }
+        .login-card h3 { margin-top: 0; margin-bottom: 16px; font-size: 18px; }
 
         .login-card input[type="password"] {
-            width: 100%;
-            padding: 12px;
+            width: 100%; padding: 12px;
             border: 1px solid var(--grid-color);
-            border-radius: 6px;
-            font-size: 15px;
-            margin-bottom: 16px;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .login-card input[type="password"]:focus {
-            border-color: var(--selected-border);
+            border-radius: 6px; font-size: 15px; margin-bottom: 16px; outline: none;
         }
 
         .login-card button {
-            width: 100%;
-            padding: 12px;
+            width: 100%; padding: 12px;
             background-color: var(--primary-btn);
-            font-size: 15px;
-            border-radius: 6px;
-            font-weight: bold;
+            font-size: 15px; border-radius: 6px; font-weight: bold; color: #fff; border: none;
         }
 
-        .error-msg {
-            color: var(--danger-btn);
-            font-size: 13px;
-            margin-top: 10px;
-            display: none;
-        }
+        .error-msg { color: var(--danger-btn); font-size: 13px; margin-top: 10px; display: none; }
 
-        /* 📊 主容器 */
         .container {
-            width: 100%;
-            max-width: 1100px;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            width: 100%; max-width: 1100px;
+            background: #ffffff; padding: 20px;
+            border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             display: none;
         }
 
         .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; gap: 12px;
         }
 
-        h2 {
-            margin: 0;
-            font-weight: 600;
-            color: #111827;
-            letter-spacing: 0.5px;
-            font-size: 20px;
-        }
+        h2 { margin: 0; font-weight: 600; color: #111827; font-size: 20px; }
 
-        /* 🔘 表格結構按鈕列 */
-        .toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 
         button {
-            background-color: var(--primary-btn);
-            color: #ffffff;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            touch-action: manipulation;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            background-color: var(--primary-btn); color: #ffffff;
+            border: none; padding: 8px 12px; border-radius: 6px;
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center;
         }
 
-        button:active {
-            transform: scale(0.97);
-        }
+        button:active { transform: scale(0.97); }
+        button:hover { opacity: 0.9; }
+        button.success { background-color: var(--success-btn); }
+        button.warning { background-color: var(--warning-btn); }
+        button.danger { background-color: var(--danger-btn); }
 
-        button:hover {
-            opacity: 0.9;
-        }
-
-        button.success {
-            background-color: var(--success-btn);
-        }
-
-        button.danger {
-            background-color: var(--danger-btn);
-        }
-
-        /* 📝 Word 風格文字編輯工具列 */
         .text-editor-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 12px;
-            background-color: #f3f4f6;
-            border: 1px solid var(--grid-color);
-            border-radius: 6px;
-            margin-bottom: 16px;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+            padding: 8px 12px; background-color: #f3f4f6;
+            border: 1px solid var(--grid-color); border-radius: 6px; margin-bottom: 16px;
         }
 
         .editor-btn {
-            background-color: #ffffff;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            padding: 6px 10px;
-            font-size: 13px;
-            border-radius: 4px;
-            min-width: 32px;
-            height: 32px;
-            cursor: pointer;
+            background-color: #ffffff; color: #374151; border: 1px solid #d1d5db;
+            padding: 6px 10px; font-size: 13px; border-radius: 4px; min-width: 32px; height: 32px; cursor: pointer;
         }
 
-        .editor-btn:hover {
-            background-color: #e5e7eb;
-        }
-
-        .editor-btn.active {
-            background-color: #2563eb !important;
-            color: #ffffff !important;
-            border-color: #1d4ed8 !important;
-        }
+        .editor-btn.active { background-color: #2563eb !important; color: #ffffff !important; }
 
         .editor-select {
-            height: 32px;
-            padding: 4px 8px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            background-color: #ffffff;
-            font-size: 13px;
-            outline: none;
-            cursor: pointer;
+            height: 32px; padding: 4px 8px; border: 1px solid #d1d5db;
+            border-radius: 4px; background-color: #ffffff; font-size: 13px; outline: none;
         }
 
-        /* 🎨 下拉色板元件 */
-        .color-picker-dropdown {
-            position: relative;
-            display: inline-block;
-        }
+        .color-picker-dropdown { position: relative; display: inline-block; }
 
         .color-dropdown-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            margin-top: 4px;
-            background: #ffffff;
-            border: 1px solid #d1d5db;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-radius: 6px;
-            padding: 8px;
-            z-index: 100;
-            width: 210px;
+            display: none; position: absolute; top: 100%; left: 0; margin-top: 4px;
+            background: #ffffff; border: 1px solid #d1d5db;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 6px; padding: 8px; z-index: 100; width: 210px;
         }
 
-        .color-dropdown-menu.show {
-            display: block;
-        }
+        .color-dropdown-menu.show { display: block; }
+        .color-palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-bottom: 6px; }
+        .color-box { width: 32px; height: 24px; border: 1px solid #d1d5db; border-radius: 2px; cursor: pointer; }
+        .color-btn-item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px; background: none; border: none; font-size: 12px; cursor: pointer; text-align: left; }
+        .custom-color-input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+        .divider { width: 1px; height: 20px; background-color: #d1d5db; margin: 0 4px; }
 
-        .color-section-title {
-            font-size: 11px;
-            color: #6b7280;
-            margin: 6px 0 4px 0;
-            font-weight: bold;
-        }
-
-        .color-palette-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 4px;
-            margin-bottom: 6px;
-        }
-
-        .color-box {
-            width: 32px;
-            height: 24px;
-            border: 1px solid #d1d5db;
-            border-radius: 2px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-
-        .color-box:hover {
-            transform: scale(1.1);
-            border-color: #000;
-        }
-
-        .color-btn-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            padding: 6px;
-            background: none;
-            border: none;
-            color: #374151;
-            font-size: 12px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-align: left;
-            justify-content: flex-start;
-        }
-
-        .color-btn-item:hover {
-            background-color: #f3f4f6;
-        }
-
-        .custom-color-input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0;
-            pointer-events: none;
-        }
-
-        .divider {
-            width: 1px;
-            height: 20px;
-            background-color: #d1d5db;
-            margin: 0 4px;
-        }
-
-        /* 🏁 樸素方格表格樣式 */
         .table-container {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border: 1px solid var(--grid-color);
-            border-radius: 6px;
+            width: 100%; overflow-x: auto;
+            border: 1px solid var(--grid-color); border-radius: 6px;
         }
 
         table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: #ffffff;
-            text-align: left;
-            min-width: 500px;
+            width: 100%; border-collapse: collapse; background-color: #ffffff; text-align: left; min-width: 500px;
         }
 
         th, td {
             border: 1px solid var(--grid-color);
-            padding: 10px 12px;
-            min-width: 100px;
-            font-size: 14px;
-            position: relative;
-            word-break: break-word;
-            white-space: pre-wrap;
+            padding: 10px 12px; min-width: 100px; font-size: 14px;
+            position: relative; word-break: break-word; white-space: pre-wrap;
+            user-select: text;
         }
 
-        th {
-            background-color: var(--header-bg);
-            font-weight: 600;
-        }
+        th { background-color: var(--header-bg); font-weight: 600; }
 
+        /* 🟦 複選框框的高亮樣式 */
         th.selected-cell, td.selected-cell {
+            background-color: var(--selected-bg) !important;
             outline: 2px solid var(--selected-border) !important;
             outline-offset: -2px;
-            background-color: var(--selected-bg) !important;
         }
 
         td[contenteditable="true"]:focus, th[contenteditable="true"]:focus {
             outline: 2px solid var(--selected-border);
             background-color: #ffffff;
-        }
-
-        tr:hover td {
-            background-color: var(--hover-bg);
-        }
-
-        @media (max-width: 600px) {
-            body { padding: 10px 8px; }
-            .container { padding: 14px 10px; border-radius: 8px; }
-            h2 { font-size: 16px; }
-            .toolbar button { flex: 1 1 calc(50% - 6px); padding: 8px 6px; font-size: 12px; }
-            .toolbar button.danger, .toolbar button.success { flex: 1 1 100%; margin-left: 0 !important; }
-            .text-editor-toolbar { gap: 4px; padding: 6px; }
-            .editor-btn { padding: 4px 8px; font-size: 12px; }
-            th, td { padding: 8px 10px; font-size: 13px; min-width: 90px; }
         }
     </style>
 </head>
@@ -380,13 +191,17 @@
         <button onmousedown="event.preventDefault()" onclick="removeSelectedRow()">- 刪除此橫列</button>
         <button onmousedown="event.preventDefault()" onclick="addColumnRightSelected()">+ 右側新增欄</button>
         <button onmousedown="event.preventDefault()" onclick="removeSelectedColumn()">- 刪除此直欄</button>
+        
+        <!-- 🆕 新增：合併與拆分按鈕 -->
+        <button class="warning" onmousedown="event.preventDefault()" onclick="mergeSelectedCells()">🔗 合併儲存格</button>
+        <button class="warning" onmousedown="event.preventDefault()" onclick="unmergeSelectedCell()">✂️ 取消合併</button>
+
         <button class="success" onclick="exportToWord()" style="margin-left: auto;">📄 匯出 Word 檔</button>
         <button class="danger" onclick="clearData()">清空重設</button>
     </div>
 
     <!-- 📝 Word 風格文字編輯排版工具列 -->
     <div class="text-editor-toolbar">
-        <!-- 🔤 字型大小選單 -->
         <select class="editor-select" id="fontSizeSelect" onfocus="saveSelection()" onchange="setFontSize(this.value); this.selectedIndex=0;">
             <option value="" disabled selected>字型大小</option>
             <option value="12px">12 px</option>
@@ -407,7 +222,6 @@
 
         <div class="divider"></div>
 
-        <!-- 🎨 Word 風格文字顏色選單 -->
         <div class="color-picker-dropdown">
             <button class="editor-btn" title="文字顏色" onmousedown="event.preventDefault()" onclick="toggleDropdown('textColorMenu')">
                 <span style="font-weight:bold; border-bottom: 3px solid red;">A</span> ▾
@@ -416,7 +230,6 @@
                 <button class="color-btn-item" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#000000'); closeDropdowns();">
                     <span style="display:inline-block; width:14px; height:14px; background:#000;"></span> 自動 (黑色)
                 </button>
-                <div class="color-section-title">標準色彩</div>
                 <div class="color-palette-grid">
                     <div class="color-box" style="background:#c00000;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#c00000'); closeDropdowns();"></div>
                     <div class="color-box" style="background:#ff0000;" onmousedown="event.preventDefault()" onclick="formatText('foreColor', '#ff0000'); closeDropdowns();"></div>
@@ -436,28 +249,17 @@
             </div>
         </div>
 
-        <!-- 🖌️ Word 風格背景顏色選單 -->
         <div class="color-picker-dropdown">
             <button class="editor-btn" title="文字背景螢光色" onmousedown="event.preventDefault()" onclick="toggleDropdown('bgColorMenu')">
                 <span>ab<b>y</b></span> ▾
             </button>
             <div class="color-dropdown-menu" id="bgColorMenu">
-                <div class="color-palette-grid" style="grid-template-columns: repeat(5, 1fr);">
+                <div class="color-palette-grid">
                     <div class="color-box" style="background:#ffff00;" title="黃色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#ffff00'); closeDropdowns();"></div>
                     <div class="color-box" style="background:#00ff00;" title="亮綠色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#00ff00'); closeDropdowns();"></div>
                     <div class="color-box" style="background:#00ffff;" title="青色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#00ffff'); closeDropdowns();"></div>
                     <div class="color-box" style="background:#ff00ff;" title="粉紅" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#ff00ff'); closeDropdowns();"></div>
                     <div class="color-box" style="background:#0000ff;" title="藍色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#0000ff'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#ff0000;" title="紅色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#ff0000'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#000080;" title="深藍" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#000080'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#008080;" title="藍綠" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#008080'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#008000;" title="綠色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#008000'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#800080;" title="紫色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#800080'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#800000;" title="深紅" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#800000'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#808000;" title="橄欖綠" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#808000'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#808080;" title="灰色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#808080'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#c0c0c0;" title="淺灰" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#c0c0c0'); closeDropdowns();"></div>
-                    <div class="color-box" style="background:#000000;" title="黑色" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', '#000000'); closeDropdowns();"></div>
                 </div>
                 <button class="color-btn-item" onmousedown="event.preventDefault()" onclick="formatText('hiliteColor', 'transparent'); closeDropdowns();">
                     🚫 無色彩
@@ -484,7 +286,7 @@
     <!-- 表格區域 -->
     <div class="table-container">
         <table id="gridTable">
-            <thead>
+            <thead id="tableHeaderOwner">
                 <tr id="tableHeader">
                     <th contenteditable="true">欄位 1</th>
                     <th contenteditable="true">欄位 2</th>
@@ -535,7 +337,6 @@
     const errorMsg = document.getElementById("errorMsg");
 
     const ADMIN_PASSWORD = "admin";
-    let selectedCell = null;
     let isUpdatingFromCloud = false;
     let isComposing = false;
     let savedRange = null;
@@ -543,12 +344,13 @@
     let copiedStyle = null;
     let isFormatPainterActive = false;
 
+    // 區域選擇變數
+    let isSelecting = false;
+    let startCell = null;
+    let selectedCells = [];
+
     const defaultData = {
-        headers: ["欄位 1", "欄位 2", "欄位 3"],
-        rows: [
-            ["內容 A1", "內容 B1", "內容 C1"],
-            ["內容 A2", "內容 B2", "內容 C2"]
-        ]
+        html: `<tr><th contenteditable="true">欄位 1</th><th contenteditable="true">欄位 2</th><th contenteditable="true">欄位 3</th></tr>|<tr><td contenteditable="true">內容 A1</td><td contenteditable="true">內容 B1</td><td contenteditable="true">內容 C1</td></tr><tr><td contenteditable="true">內容 A2</td><td contenteditable="true">內容 B2</td><td contenteditable="true">內容 C2</td></tr>`
     };
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -568,8 +370,10 @@
             }
         });
 
-        document.addEventListener('mouseup', applyCopiedFormat);
-        document.addEventListener('keyup', applyCopiedFormat);
+        // 全局拖曳滑鼠mouseup事件，終止框框複選
+        document.addEventListener('mouseup', function() {
+            isSelecting = false;
+        });
     });
 
     function toggleDropdown(menuId) {
@@ -651,7 +455,7 @@
         restoreSelection();
         const sel = window.getSelection();
         
-        if (!sel.rangeCount || sel.isCollapsed && !selectedCell) {
+        if (!sel.rangeCount || sel.isCollapsed && selectedCells.length === 0) {
             alert("請先將游標點擊在欲複製格式的文字上！");
             return;
         }
@@ -668,131 +472,153 @@
             color: computedStyle.color,
             backgroundColor: computedStyle.backgroundColor,
             fontWeight: computedStyle.fontWeight,
-            fontStyle: computedStyle.fontStyle,
-            textDecorationLine: computedStyle.textDecorationLine
+            fontStyle: computedStyle.fontStyle
         };
 
         isFormatPainterActive = true;
-        const btn = document.getElementById('formatPainterBtn');
-        btn.classList.add('active');
+        document.getElementById('formatPainterBtn').classList.add('active');
     }
 
-    function applyCopiedFormat() {
-        if (!isFormatPainterActive || !copiedStyle) return;
+    /* 🖱️ 多選儲存格邏輯 (Drag / Multi-select) */
+    function getCellCoords(cell) {
+        const row = cell.parentElement;
+        const rowIndex = Array.from(table.querySelectorAll('tr')).indexOf(row);
+        const colIndex = cell.cellIndex;
+        return { rowIndex, colIndex };
+    }
 
-        const sel = window.getSelection();
-        if (!sel.rangeCount || sel.isCollapsed) return;
+    function clearSelection() {
+        table.querySelectorAll('th, td').forEach(c => c.classList.remove('selected-cell'));
+        selectedCells = [];
+    }
 
-        restoreSelection();
-        document.execCommand('styleWithCSS', false, true);
-
-        document.execCommand('foreColor', false, copiedStyle.color);
-        document.execCommand('hiliteColor', false, copiedStyle.backgroundColor);
+    function selectCellRange(start, end) {
+        clearSelection();
+        const rows = Array.from(table.querySelectorAll('tr'));
         
-        if ((copiedStyle.fontWeight === 'bold' || parseInt(copiedStyle.fontWeight) >= 700) !== document.queryCommandState('bold')) {
-            document.execCommand('bold', false, null);
+        const rMin = Math.min(start.rowIndex, end.rowIndex);
+        const rMax = Math.max(start.rowIndex, end.rowIndex);
+        const cMin = Math.min(start.colIndex, end.colIndex);
+        const cMax = Math.max(start.colIndex, end.colIndex);
+
+        for (let r = rMin; r <= rMax; r++) {
+            const cells = rows[r].cells;
+            for (let c = 0; c < cells.length; c++) {
+                const cell = cells[c];
+                const coords = getCellCoords(cell);
+                if (coords.colIndex >= cMin && coords.colIndex <= cMax) {
+                    cell.classList.add('selected-cell');
+                    selectedCells.push(cell);
+                }
+            }
         }
-        if ((copiedStyle.fontStyle === 'italic') !== document.queryCommandState('italic')) {
-            document.execCommand('italic', false, null);
+    }
+
+    function initSelectionEvents() {
+        table.querySelectorAll('th, td').forEach(cell => {
+            cell.onmousedown = function(e) {
+                // 如果按住 Shift 鍵支援快速區域點選
+                if (e.shiftKey && startCell) {
+                    selectCellRange(getCellCoords(startCell), getCellCoords(cell));
+                    return;
+                }
+                isSelecting = true;
+                startCell = cell;
+                selectCellRange(getCellCoords(startCell), getCellCoords(cell));
+            };
+
+            cell.onmouseenter = function() {
+                if (isSelecting && startCell) {
+                    selectCellRange(getCellCoords(startCell), getCellCoords(cell));
+                }
+            };
+        });
+    }
+
+    /* 🔗 儲存格合併 (Merge Selected Cells) */
+    function mergeSelectedCells() {
+        if (selectedCells.length <= 1) {
+            alert("請按住滑鼠拖曳，同時選擇至少兩個以上的儲存格來進行合併！");
+            return;
         }
 
-        if (copiedStyle.fontSize) {
-            setFontSize(copiedStyle.fontSize);
-        }
+        // 計算所選區域的矩形邊界
+        let minR = Infinity, maxR = -1, minC = Infinity, maxC = -1;
+        selectedCells.forEach(cell => {
+            const { rowIndex, colIndex } = getCellCoords(cell);
+            const rSpan = cell.rowSpan || 1;
+            const cSpan = cell.colSpan || 1;
+            minR = Math.min(minR, rowIndex);
+            maxR = Math.max(maxR, rowIndex + rSpan - 1);
+            minC = Math.min(minC, colIndex);
+            maxC = Math.max(maxC, colIndex + cSpan - 1);
+        });
 
-        isFormatPainterActive = false;
-        copiedStyle = null;
-        document.getElementById('formatPainterBtn').classList.remove('active');
+        const targetCell = selectedCells[0];
+        let mergedHTML = "";
+
+        // 收集所有被合併儲存格的文字內容
+        selectedCells.forEach(cell => {
+            if (cell.innerHTML.trim() && cell.innerHTML.trim() !== "<br>") {
+                mergedHTML += (mergedHTML ? " " : "") + cell.innerHTML.trim();
+            }
+        });
+
+        targetCell.rowSpan = (maxR - minR + 1);
+        targetCell.colSpan = (maxC - minC + 1);
+        targetCell.innerHTML = mergedHTML;
+
+        // 刪除其餘被合併掉的舊儲存格
+        selectedCells.slice(1).forEach(cell => cell.remove());
+
+        clearSelection();
+        targetCell.classList.add('selected-cell');
+        selectedCells = [targetCell];
         saveTableDataToCloud();
     }
 
-    function exportToWord() {
-        const columnCount = tableHeader.cells.length;
-        const tableClone = table.cloneNode(true);
-
-        let pageSize = columnCount >= 5 ? 'A4 landscape' : 'A4 portrait';
-        let marginSize = columnCount >= 5 ? '1.5cm' : '2.0cm';
-
-        tableClone.querySelectorAll('th, td').forEach(cell => {
-            cell.classList.remove('selected-cell');
-            cell.removeAttribute('contenteditable');
-            
-            cell.style.border = '1.0pt solid #d1d5db';
-            cell.style.padding = '8px 12px';
-            cell.style.fontSize = '14px';
-            cell.style.lineHeight = '1.5';
-            cell.style.wordBreak = 'break-word';
-            cell.style.whiteSpace = 'pre-wrap';
-        });
-
-        tableClone.querySelectorAll('th').forEach(th => {
-            th.style.backgroundColor = '#f3f4f6';
-            th.style.fontWeight = 'bold';
-        });
-
-        const wordHTML = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' 
-                  xmlns:w='urn:schemas-microsoft-com:office:word' 
-                  xmlns='http://www.w3.org/TR/REC-html40'>
-            <head>
-                <meta charset='utf-8'>
-                <title>JAF 記錄表</title>
-                <!--[if gte mso 9]>
-                <xml>
-                    <w:WordDocument>
-                        <w:View>Print</w:View>
-                        <w:Zoom>100</w:Zoom>
-                        <w:DoNotOptimizeForBrowser/>
-                    </w:WordDocument>
-                </xml>
-                <![endif]-->
-                <style>
-                    @page {
-                        size: ${pageSize};
-                        margin: ${marginSize};
-                    }
-                    body {
-                        font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
-                        color: #374151;
-                    }
-                    h2 {
-                        font-size: 18pt;
-                        margin-bottom: 12pt;
-                        color: #111827;
-                        font-weight: bold;
-                    }
-                    table {
-                        border-collapse: collapse;
-                        width: 100%;
-                        table-layout: auto;
-                        margin-top: 10px;
-                    }
-                    th, td {
-                        mso-border-alt: solid #d1d5db .5pt;
-                    }
-                </style>
-            </head>
-            <body>
-                <h2>JAF 記錄表</h2>
-                ${tableClone.outerHTML}
-            </body>
-            </html>
-        `;
-
-        const blob = new Blob(['\ufeff' + wordHTML], { type: 'application/msword;charset=utf-8' });
-        const today = new Date().toISOString().split('T')[0];
-        const fileName = `JAF_記錄表_${today}.doc`;
-
-        if (navigator.msSaveOrOpenBlob) {
-            navigator.msSaveOrOpenBlob(blob, fileName);
-        } else {
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    /* ✂️ 取消合併 (Unmerge Cell) */
+    function unmergeSelectedCell() {
+        if (selectedCells.length !== 1) {
+            alert("請選擇一個已合併的儲存格來執行取消合併操作！");
+            return;
         }
+
+        const cell = selectedCells[0];
+        const rSpan = cell.rowSpan || 1;
+        const cSpan = cell.colSpan || 1;
+
+        if (rSpan === 1 && cSpan === 1) {
+            alert("此儲存格並未合併，無法拆分。");
+            return;
+        }
+
+        const coords = getCellCoords(cell);
+        const rows = Array.from(table.querySelectorAll('tr'));
+        const htmlContent = cell.innerHTML;
+
+        cell.rowSpan = 1;
+        cell.colSpan = 1;
+
+        // 補回拆分後的空格
+        for (let r = 0; r < rSpan; r++) {
+            const targetRow = rows[coords.rowIndex + r];
+            for (let c = 0; c < cSpan; c++) {
+                if (r === 0 && c === 0) continue; // 第一個是原本的儲存格
+                const newTd = document.createElement(targetRow.parentElement.tagName === 'THEAD' ? 'th' : 'td');
+                newTd.contentEditable = "true";
+                newTd.innerHTML = "";
+                
+                if (c < targetRow.cells.length) {
+                    targetRow.cells[c].before(newTd);
+                } else {
+                    targetRow.appendChild(newTd);
+                }
+            }
+        }
+
+        initSelectionEvents();
+        saveTableDataToCloud();
     }
 
     function showApp() {
@@ -807,7 +633,7 @@
                 }
                 isUpdatingFromCloud = true;
                 renderTableData(data);
-                bindCellEvents();
+                initSelectionEvents();
                 isUpdatingFromCloud = false;
             } else {
                 dbRef.set(defaultData);
@@ -823,36 +649,8 @@
         });
     }
 
-    function bindCellEvents() {
-        table.querySelectorAll("th, td").forEach(function(cell) {
-            cell.removeEventListener("focus", handleCellFocus);
-            cell.removeEventListener("mousedown", handleCellFocus);
-            cell.removeEventListener("blur", saveTableDataToCloud);
-            
-            cell.addEventListener("focus", handleCellFocus);
-            cell.addEventListener("mousedown", handleCellFocus);
-            cell.addEventListener("blur", saveTableDataToCloud);
-        });
-    }
-
-    function handleCellFocus(e) {
-        if (selectedCell) {
-            selectedCell.classList.remove("selected-cell");
-        }
-        selectedCell = e.currentTarget;
-        selectedCell.classList.add("selected-cell");
-    }
-
-    function getSelectedPosition() {
-        if (!selectedCell) return null;
-        const cell = selectedCell;
-        const colIndex = cell.cellIndex;
-        const row = cell.parentElement;
-        return { row, cell, colIndex };
-    }
-
     function addRowBelowSelected() {
-        const pos = getSelectedPosition();
+        const selected = selectedCells[0];
         const colCount = tableHeader.cells.length;
         const newRow = document.createElement("tr");
 
@@ -863,37 +661,37 @@
             newRow.appendChild(newCell);
         }
 
-        if (pos && pos.row.parentElement.tagName === "TBODY") {
-            pos.row.after(newRow);
+        if (selected && selected.parentElement.parentElement.tagName === "TBODY") {
+            selected.parentElement.after(newRow);
         } else {
             tableBody.appendChild(newRow);
         }
 
-        bindCellEvents();
+        initSelectionEvents();
         saveTableDataToCloud();
     }
 
     function removeSelectedRow() {
-        const pos = getSelectedPosition();
-        if (!pos) {
+        const selected = selectedCells[0];
+        if (!selected) {
             if (tableBody.rows.length > 1) {
                 tableBody.deleteRow(-1);
                 saveTableDataToCloud();
             } else { alert("至少需保留一列資料！"); }
             return;
         }
-        if (pos.row.parentElement.tagName === "THEAD") { alert("不能刪除標題表頭列！"); return; }
+        if (selected.parentElement.parentElement.tagName === "THEAD") { alert("不能刪除標題表頭列！"); return; }
         if (tableBody.rows.length <= 1) { alert("至少需保留一列資料！"); return; }
 
-        pos.row.remove();
-        selectedCell = null;
-        bindCellEvents();
+        selected.parentElement.remove();
+        clearSelection();
+        initSelectionEvents();
         saveTableDataToCloud();
     }
 
     function addColumnRightSelected() {
-        const pos = getSelectedPosition();
-        const colIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
+        const selected = selectedCells[0];
+        const colIndex = selected ? selected.cellIndex : tableHeader.cells.length - 1;
 
         const ths = Array.from(tableHeader.cells);
         const newTh = document.createElement("th");
@@ -910,14 +708,14 @@
             else { row.appendChild(newTd); }
         });
 
-        bindCellEvents();
+        initSelectionEvents();
         saveTableDataToCloud();
     }
 
     function removeSelectedColumn() {
         if (tableHeader.cells.length <= 1) { alert("至少需保留一欄！"); return; }
-        const pos = getSelectedPosition();
-        const targetColIndex = pos ? pos.colIndex : tableHeader.cells.length - 1;
+        const selected = selectedCells[0];
+        const targetColIndex = selected ? selected.cellIndex : tableHeader.cells.length - 1;
 
         tableHeader.deleteCell(targetColIndex);
 
@@ -925,62 +723,67 @@
             if (row.cells[targetColIndex]) { row.deleteCell(targetColIndex); }
         });
 
-        selectedCell = null;
-        bindCellEvents();
+        clearSelection();
+        initSelectionEvents();
         saveTableDataToCloud();
     }
 
     function saveTableDataToCloud() {
-        const headers = Array.from(tableHeader.cells).map(function(cell) { return cell.innerHTML; });
-        const rows = Array.from(tableBody.rows).map(function(row) { 
-            return Array.from(row.cells).map(function(cell) { return cell.innerHTML; });
-        });
+        const headerHTML = tableHeader.outerHTML;
+        const bodyHTML = tableBody.innerHTML;
+        const fullHTML = headerHTML + "|" + bodyHTML;
 
-        const tableData = { headers: headers, rows: rows };
-        dbRef.set(tableData);
+        dbRef.set({ html: fullHTML });
     }
 
     function renderTableData(data) {
-        if (!data || !data.headers || !data.rows) return;
+        if (!data) return;
 
-        const headers = data.headers;
-        const rows = data.rows;
-
-        tableHeader.innerHTML = "";
-        headers.forEach(function(text) {
-            const th = document.createElement("th");
-            th.contentEditable = "true";
-            th.innerHTML = text;
-            tableHeader.appendChild(th);
-        });
-
-        tableBody.innerHTML = "";
-        rows.forEach(function(rowData) {
-            const tr = document.createElement("tr");
-            rowData.forEach(function(text) {
-                const td = document.createElement("td");
-                td.contentEditable = "true";
-                td.innerHTML = text;
-                tr.appendChild(td);
-            });
-            tableBody.appendChild(tr);
-        });
+        if (data.html) {
+            const parts = data.html.split('|');
+            if (parts.length === 2) {
+                tableHeader.outerHTML = parts[0];
+                tableBody.innerHTML = parts[1];
+            }
+        }
     }
 
-    /* 🛡️ 雙重防誤觸清空機制 */
-    function clearData() {
-        // 第一重確認
-        const confirmFirst = confirm("⚠️ 警告：這將會【清除所有雲端資料】並還原為初始狀態！\n\n此動作無法復原，您確定要繼續嗎？");
-        if (!confirmFirst) return;
+    function exportToWord() {
+        const tableClone = table.cloneNode(true);
 
-        // 第二重確認 (輸入驗證碼 CLEAR)
-        const userInput = prompt("請在下方輸入 【 CLEAR 】 (大寫) 以確認清空表格：");
-        
-        if (userInput === "CLEAR") {
-            dbRef.set(defaultData);
-            alert("已成功清空並重設所有表格資料！");
-        } else if (userInput !== null) {
-            alert("❌ 驗證文字輸入錯誤，清空動作已取消。");
+        tableClone.querySelectorAll('th, td').forEach(cell => {
+            cell.classList.remove('selected-cell');
+            cell.removeAttribute('contenteditable');
+            cell.style.border = '1.0pt solid #d1d5db';
+            cell.style.padding = '8px 12px';
+            cell.style.fontSize = '14px';
+        });
+
+        const wordHTML = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>JAF 記錄表</title></head>
+            <body><h2>JAF 記錄表</h2>${tableClone.outerHTML}</body>
+            </html>
+        `;
+
+        const blob = new Blob(['\ufeff' + wordHTML], { type: 'application/msword;charset=utf-8' });
+        const today = new Date().toISOString().split('T')[0];
+        const fileName = `JAF_記錄表_${today}.doc`;
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function clearData() {
+        if (confirm("⚠️ 警告：這將會【清空並還原雲端表格】！確定繼續嗎？")) {
+            if (prompt("請輸入 【 CLEAR 】 (大寫) 以確認清空：") === "CLEAR") {
+                dbRef.set(defaultData);
+                alert("已成功清空並重設！");
+            }
         }
     }
 </script>
